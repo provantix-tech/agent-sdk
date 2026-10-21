@@ -10,14 +10,10 @@ No dependencies. Node 20+.
 
 ## Install
 
+Published on npm:
+
 ```bash
 npm install @provantix/agent-sdk
-```
-
-Until the package is on npm, install straight from this repo:
-
-```bash
-npm install github:provantix-tech/agent-sdk
 ```
 
 Docs: [docs.provantix.tech/ingest/node-sdk](https://docs.provantix.tech/ingest/node-sdk).
