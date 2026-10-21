@@ -11,10 +11,10 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { Collector } from '../../../ledger/packages/collector-core/src/collector.mjs';
-import { Spool } from '../../../ledger/packages/collector-core/src/spool.mjs';
-import { generateCollectorKeys } from '../../../ledger/packages/collector-core/src/batch.mjs';
-import { newHandleKey } from '../../../ledger/packages/collector-core/src/handles.mjs';
+import { Collector } from './vendor/collector.mjs';
+import { Spool } from './vendor/spool.mjs';
+import { generateCollectorKeys } from './vendor/batch.mjs';
+import { newHandleKey } from './vendor/handles.mjs';
 import { validateAAR } from './aar.mjs';
 import { otelGenAiToAAR } from './otel.mjs';
 

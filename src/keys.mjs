@@ -5,7 +5,7 @@
 // exists on the server. The same generator backs the server-side fallback when customers
 // opt for a generated key.
 
-import { generateCollectorKeys } from '../../../ledger/packages/collector-core/src/batch.mjs';
+import { generateCollectorKeys } from './vendor/batch.mjs';
 
 export function generateEmitterKeys() {
   return generateCollectorKeys();
