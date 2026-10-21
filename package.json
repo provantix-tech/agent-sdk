@@ -1,0 +1,38 @@
+{
+  "name": "@provantix/agent-sdk",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Agent-side SDK for Provantix: emit Agent Action Records (AAR) and OTel GenAI spans as signed, hash-chained batches.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/provantix-tech/agent-sdk.git"
+  },
+  "homepage": "https://docs.provantix.tech/ingest/node-sdk",
+  "keywords": [
+    "provantix",
+    "agent-telemetry",
+    "ai-agents",
+    "audit-trail",
+    "agent-attribution",
+    "otel",
+    "genai"
+  ],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
