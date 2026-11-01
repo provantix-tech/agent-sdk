@@ -97,6 +97,7 @@ export function buildAAR(a) {
       token_actor: a.agent?.tokenActor ?? null,
       user_agent: a.agent?.userAgent ?? null,
     },
+    ...(a.location ? { location: a.location } : {}),
     on_behalf_of: a.onBehalfOf ?? [],
     delegation_chain: a.delegationChain ?? [],
     authorization: a.authorization ?? null,

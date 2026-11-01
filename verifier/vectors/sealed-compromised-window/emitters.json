@@ -1,0 +1,30 @@
+{
+  "emitters": [
+    {
+      "collector_id": "emi_vector01",
+      "status": "active",
+      "keys": [
+        {
+          "role": "current",
+          "fingerprint": "ea31876a87e8f6c5ead5a358c0576d6904f46a2abf7e5de8cba040ef7161c66d",
+          "pem_sha256": "447fc68f2e43965981f915660b264dba1368dfbcea52760d34dbede5a81497fc",
+          "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEBG/Gn7b81lEMXt+MBv6Kam0AHmTE\nkxZUaHCSkU3Or2tcOVuoB07roYFYM3ahNov6CfSrkHPKmLT7DmYJ1rd7jw==\n-----END PUBLIC KEY-----\n",
+          "valid_from": "2026-11-01T00:00:00.000Z",
+          "valid_until": null,
+          "key_source": "customer"
+        }
+      ],
+      "key_events": [
+        {
+          "event": "compromised",
+          "at": "2026-11-01T11:00:00.000Z",
+          "retire_at": null,
+          "grace_until": null,
+          "suspect_from": "2026-11-01T09:00:00.000Z",
+          "reason": "key leaked",
+          "public_key_sha256": "447fc68f2e43965981f915660b264dba1368dfbcea52760d34dbede5a81497fc"
+        }
+      ]
+    }
+  ]
+}

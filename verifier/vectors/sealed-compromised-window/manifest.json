@@ -1,0 +1,51 @@
+{
+  "export_version": "1.0",
+  "export_id": "exp_vector_sealed-compromised-window",
+  "created_at": "2026-11-01T12:00:00.000Z",
+  "actor": "vector",
+  "filter": {},
+  "complete": true,
+  "record_count": 5,
+  "files": [
+    {
+      "path": "records.jsonl",
+      "sha256": "ed1399521b196d4030365670035a10c1de867643f5adde1d34acb611870fb21e",
+      "bytes": 10778
+    },
+    {
+      "path": "timeline.csv",
+      "sha256": "d3748d5816c1f0af84d453f67bb944c7e0bcee9a6cddd705031b579d398366f9",
+      "bytes": 313
+    },
+    {
+      "path": "coverage.json",
+      "sha256": "28de7a19b594249ab85ece037319d940fd421c5ff5a3aaf1c5b5b93d143d849c",
+      "bytes": 73
+    },
+    {
+      "path": "roots/2026-11-01.json",
+      "sha256": "4ad34f2155ff5343a3d4c30893dea35f32ac4a294fe533a064d31ef262b559a1",
+      "bytes": 330
+    },
+    {
+      "path": "seals.jsonl",
+      "sha256": "34468be42c2295113e3c6b5092f574a127c35c48680f7d9c6eaf8de213f1aa67",
+      "bytes": 1319
+    },
+    {
+      "path": "emitters.json",
+      "sha256": "1ace4eb7ae6bf978c072aca3b5d615d109e35a71630af49db80cc5280f1a94f5",
+      "bytes": 1064
+    }
+  ],
+  "roots_included": [
+    "2026-11-01"
+  ],
+  "roots_pending": [],
+  "integrity_boundary": "collector",
+  "redaction_profile": "default-v1",
+  "emitter_proof": {
+    "sealed_batches": 2,
+    "emitters": 1
+  }
+}

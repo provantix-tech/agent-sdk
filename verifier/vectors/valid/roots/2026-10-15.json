@@ -1,0 +1,36 @@
+{
+  "day": "2026-10-15",
+  "tenant_root": "ca1990e2d173def52fdbe51e0f99e6dd16f44e0c20090ac355e188098f15bdd4",
+  "prev_tenant_root": null,
+  "chains": {
+    "t_demo|entra-1|2026-10-15": {
+      "root": "22126466b342ea65f88a584bf674f6e82fc32c68ffea57eec9331ff7603d919c",
+      "count": 5
+    },
+    "t_demo|m365-1|2026-10-15": {
+      "root": "0675b23f7b7a35ffb0de09190740b6a0c9fe3203b7a99c25324e148393ed6b46",
+      "count": 2
+    },
+    "t_demo|now-1|2026-10-15": {
+      "root": "a024b6582531f6ae9224ec022a6400b37c549fc2fc579729e0fb14781e779f19",
+      "count": 1
+    },
+    "t_demo|sf-1|2026-10-15": {
+      "root": "2b5c173a2b19cc6e00bd39487fe8f5cdacd99c2f2586088afdf59fe34c00abf6",
+      "count": 9
+    }
+  },
+  "record_count": 17,
+  "batches": [
+    {
+      "collector_id": "coll-demo-1",
+      "batch_seq": 1,
+      "batch_digest": "e7765c25c5e981edd1251bf86973b8881e605b3dfdab8d67c9f2d34942d531ab",
+      "signature": "MEUCIQCX/zoH6CFMvf92Mf8w23eWmyHOVb+WVSzwT8zeUvUgUgIgaPrEysQ5ipD8j+zLb2g7RzFUw3OtVCeLCUGNwE3uG4M=",
+      "record_count": 17,
+      "rejected": 0
+    }
+  ],
+  "created_at": "2026-10-15T19:42:26.156Z",
+  "forced": true
+}

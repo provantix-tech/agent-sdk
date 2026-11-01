@@ -1,0 +1,38 @@
+{
+  "export_version": "1.0",
+  "export_id": "exp_20261015T194226_1f65a072",
+  "created_at": "2026-10-15T19:42:26.161Z",
+  "actor": "admin",
+  "filter": {},
+  "complete": true,
+  "record_count": 17,
+  "files": [
+    {
+      "path": "records.jsonl",
+      "sha256": "9ef222aff4c9368a831fdb2169410ed8c9f389dcf47aaaa4ca257fbf5e236350",
+      "bytes": 41321
+    },
+    {
+      "path": "timeline.csv",
+      "sha256": "d593022a84a105c94aeeff8ede7f2096da97c0a5f46b097dcd769248e83f519b",
+      "bytes": 2735
+    },
+    {
+      "path": "coverage.json",
+      "sha256": "164d683a40b379dd045622aba3633eec3fc8af3a46ea103cab00cca8b776f0e4",
+      "bytes": 1183
+    },
+    {
+      "path": "roots/2026-10-15.json",
+      "sha256": "c01fcf9ab0748dd532b305a7f6692a9e082e06bd9a3081dccfb13752abcff3c0",
+      "bytes": 1144
+    }
+  ],
+  "roots_included": [
+    "2026-10-15"
+  ],
+  "roots_pending": [],
+  "integrity_boundary": "collector",
+  "custody_statement": "Integrity begins at the collector. Each record hash is recomputable from the exported fields and commitments; chain links and daily roots are recomputable from the exported records. This export proves the records were not altered after ingest. It does not prove the source systems reported every event, and it is not a legal admissibility opinion.",
+  "redaction_profile": "default-v1"
+}

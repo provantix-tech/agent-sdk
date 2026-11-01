@@ -8,7 +8,11 @@ import fs from 'node:fs';
 import http from 'node:http';
 
 import { buildAAR, validateAAR, otelGenAiToAAR, otelBatchToAARs, AgentEmitter } from '../src/index.mjs';
-import { createLedgerApi } from '../../server/api.mjs';
+
+// The integration tests need the Provantix control plane next to this package (the monorepo). In the public SDK
+// repository it is absent and they are skipped; every other test here runs on its own.
+let createLedgerApi = null;
+try { ({ createLedgerApi } = await import('../../server/api.mjs')); } catch { /* not in the monorepo */ }
 
 // ---------- unit: AAR ----------
 
@@ -301,7 +305,7 @@ test('the collector truncates oversized summaries at the 2 KB cap and flags it',
 // the compose user has); a shared database would make agent/emitter fixtures collide with
 // other runs. Without DATABASE_URL the integration tests skip and only the unit tests run.
 
-const hasDatabase = Boolean(process.env.DATABASE_URL);
+const hasDatabase = Boolean(process.env.DATABASE_URL && createLedgerApi);
 const dataDir = new URL('./it-data', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 const TOKEN = 'demo-admin-token-0123456789';
 const authed = { authorization: `Bearer ${TOKEN}`, 'content-type': 'application/json' };

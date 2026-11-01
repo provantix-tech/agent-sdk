@@ -1,0 +1,136 @@
+{
+  "valid": {
+    "ok": true,
+    "failing": []
+  },
+  "tampered-record": {
+    "ok": false,
+    "failing": [
+      "record 01M50HCPA72XPGP7Z2JSRNXZZM",
+      "records recompute"
+    ]
+  },
+  "broken-chain": {
+    "ok": false,
+    "failing": [
+      "chain links hold"
+    ]
+  },
+  "bad-root": {
+    "ok": false,
+    "failing": [
+      "root 2026-10-15"
+    ]
+  },
+  "missing-file": {
+    "ok": false,
+    "failing": [
+      "file present: timeline.csv"
+    ]
+  },
+  "erased-field": {
+    "ok": true,
+    "failing": []
+  },
+  "sealed-valid": {
+    "ok": true,
+    "failing": [],
+    "emitter_proof": {
+      "signed": 5,
+      "total": 5,
+      "key_sources": {
+        "bundle_unsigned": 2
+      }
+    }
+  },
+  "sealed-valid-auditor-key": {
+    "dir": "sealed-valid",
+    "emitter_keys": "sealed-valid.emitter-keys.pem",
+    "ok": true,
+    "failing": [],
+    "emitter_proof": {
+      "signed": 5,
+      "total": 5,
+      "key_sources": {
+        "auditor": 2
+      }
+    }
+  },
+  "sealed-forged-record": {
+    "ok": false,
+    "failing": [
+      "emitter proof: records match seals"
+    ],
+    "emitter_proof": {
+      "signed": 4,
+      "total": 5,
+      "failed": 1
+    }
+  },
+  "sealed-missing-record": {
+    "ok": false,
+    "failing": [
+      "emitter proof: no sealed record missing"
+    ],
+    "emitter_proof": {
+      "signed": 4,
+      "total": 4,
+      "missing": 1
+    }
+  },
+  "sealed-refused-at-ingest": {
+    "ok": true,
+    "failing": [],
+    "emitter_proof": {
+      "signed": 4,
+      "total": 4,
+      "refused": 1
+    }
+  },
+  "sealed-wrong-key-no-auditor-key": {
+    "dir": "sealed-wrong-key",
+    "ok": true,
+    "failing": [],
+    "emitter_proof": {
+      "signed": 5,
+      "total": 5,
+      "key_sources": {
+        "bundle_unsigned": 2
+      }
+    }
+  },
+  "sealed-wrong-key": {
+    "emitter_keys": "sealed-wrong-key.emitter-keys.json",
+    "ok": false,
+    "failing": [
+      "emitter proof: seals verify"
+    ],
+    "emitter_proof": {
+      "signed": 0,
+      "total": 5,
+      "failed": 5
+    }
+  },
+  "sealed-erased": {
+    "ok": true,
+    "failing": [],
+    "emitter_proof": {
+      "signed": 5,
+      "total": 5,
+      "key_sources": {
+        "bundle_unsigned": 2
+      }
+    }
+  },
+  "sealed-compromised-window": {
+    "ok": false,
+    "failing": [
+      "emitter proof: no seal from a compromised key"
+    ],
+    "emitter_proof": {
+      "signed": 3,
+      "total": 5,
+      "failed": 2
+    }
+  }
+}

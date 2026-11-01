@@ -141,6 +141,7 @@ export class Collector {
         session_id: ev.correlation?.session_id ?? null,
         conversation_id: ev.correlation?.conversation_id ?? null,
       },
+      ...(ev.location ? { location: ev.location } : {}),
       model: ev.model ?? null,
       quality: ev.quality ?? null,
       redaction: {

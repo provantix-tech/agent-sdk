@@ -1,0 +1,20 @@
+{
+  "emitters": [
+    {
+      "collector_id": "emi_vector01",
+      "status": "active",
+      "keys": [
+        {
+          "role": "current",
+          "fingerprint": "e2ebf919fe39093f5b8f2c02c622b6b0e00054db04b8a7861c767de9a1079d6d",
+          "pem_sha256": "d46dd04d7602612fbde44c72aef2b8a86dcfbb347034e161071892c487a4cbaf",
+          "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkQePZTGZtTvocVZ5E4i8WoOOqOPD\nWm1SQ9E2AMxjpEiahDJ30EVd3/j9hYKIpseZSc4P3MWbkTYQ/QMrdzYm2A==\n-----END PUBLIC KEY-----\n",
+          "valid_from": "2026-11-01T00:00:00.000Z",
+          "valid_until": null,
+          "key_source": "customer"
+        }
+      ],
+      "key_events": []
+    }
+  ]
+}

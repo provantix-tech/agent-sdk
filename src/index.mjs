@@ -3,4 +3,5 @@ export { buildAAR, validateAAR, ACTION_TYPES, VANTAGES, DATA_CLASSES, PROFILE_VE
 export { otelGenAiToAAR, otelBatchToAARs } from './otel.mjs';
 export { AgentEmitter, aarToSourceEvent } from './emitter.mjs';
 export { generateEmitterKeys } from './keys.mjs';
+export { sanitizeLocation, locationFromEnv } from './location.mjs';
 

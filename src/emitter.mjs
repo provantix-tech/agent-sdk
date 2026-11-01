@@ -17,6 +17,7 @@ import { generateCollectorKeys } from './vendor/batch.mjs';
 import { newHandleKey } from './vendor/handles.mjs';
 import { validateAAR } from './aar.mjs';
 import { otelGenAiToAAR } from './otel.mjs';
+import { sanitizeLocation, locationFromEnv } from './location.mjs';
 
 class MemorySpool {
   constructor() {
@@ -83,12 +84,17 @@ export class AgentEmitter {
    *                                    An auditor can then check, with your emitter's public key, that the emitter itself
    *                                    vouched for each record. Unsealed batches are accepted until the notice period set
    *                                    by Provantix ends; after that they are refused. Leave this on.
+   * @param {object} [opts.location]    where this emitter runs and what it acts on, as short codes: { runtime: { provider,
+   *                                    region, zone, country }, target: { region, country } }. Defaults to the cloud region
+   *                                    the process runs in (AWS_REGION, GOOGLE_CLOUD_REGION, FLY_REGION, VERCEL_REGION),
+   *                                    when one is set. Nothing finer than a country is kept. Stored as declared.
    */
-  constructor({ emitterId, tenantId, privateKeyPem, spoolDir = null, handleKey = null, maxBatchRecords = 200, seal = true }) {
+  constructor({ emitterId, tenantId, privateKeyPem, spoolDir = null, handleKey = null, maxBatchRecords = 200, seal = true, location = undefined }) {
     if (!emitterId || !tenantId || !privateKeyPem) throw new TypeError('emitterId, tenantId and privateKeyPem required');
     this.emitterId = emitterId;
     this.tenantId = tenantId;
     this.connectorInstance = `otel:${emitterId}`;
+    this.location = location === undefined ? locationFromEnv() : sanitizeLocation(location);
     if (!spoolDir) {
       console.warn(
         `[agent-sdk] emitter ${emitterId}: running without a durable spoolDir. Batches and the `
@@ -175,6 +181,7 @@ export function aarToSourceEvent(aar, emitter) {
     source_system: aar.source.system,
     source_event_type: aar.source.event_type ?? null,
     source_vantage: aar.source.vantage ?? 'inside',
+    location: sanitizeLocation(aar.location) ?? emitter.location ?? null,
     principal_kind: 'agent',
     principal_id: aar.agent_hint?.principal ?? aar.agent_hint?.vendor_agent_id ?? null,
     record_type: 'OtelGenAiSpan',

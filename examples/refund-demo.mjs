@@ -11,7 +11,7 @@
 // Then open:
 //   <base>/runs/<approved-trace>     the approved run as one chain, approval on the record
 //   <base>/findings                  sensitive_action_without_approval from the unapproved run
-// and export the approved run from its page to verify it offline (examples/verify-export.mjs).
+// and export the approved run from its page to verify it offline (verifier/verify-export.mjs).
 
 import { runRefundDemo } from './refund-scenario.mjs';
 
@@ -33,4 +33,4 @@ console.log('      the payments destination record beside it, and no sensitive-a
 console.log(`  run view (unapproved): ${base}/runs/${result.unapproved_trace}`);
 console.log(`  finding:              ${base}/findings — sensitive_action_without_approval`);
 console.log('\nVerify the export yourself: open the approved run, click "Export run", unzip, then');
-console.log('  node examples/verify-export.mjs <unzipped-dir>');
+console.log('  node verifier/verify-export.mjs <unzipped-dir> --keys provantix-export-keys.json');

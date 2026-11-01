@@ -103,6 +103,19 @@ buildAAR({ …, action: { type: 'execute', targetSystem: run.id } });
 buildAAR({ …, action: { type: 'execute', targetSystem: 'cruzclaw-backend', targetEntityId: run.id } });
 ```
 
+## Location (0.3.0)
+
+Say where the emitter runs and what it acts on, as short codes, and Provantix shows it in Investigate as declared:
+
+```js
+const emitter = new AgentEmitter({
+  emitterId, tenantId, privateKeyPem,
+  location: { runtime: { provider: 'aws', region: 'eu-west-1' }, target: { region: 'us-east-1' } },
+});
+```
+
+With no `location` the emitter reads the cloud region it runs in (`AWS_REGION`, `GOOGLE_CLOUD_REGION`, `FLY_REGION`, `VERCEL_REGION`) when one is set. `buildAAR({ location })` overrides it for one action. The location is inside the sealed record, so the seal covers it. Only a provider, region, zone and country are kept; a city or address is dropped before sealing.
+
 ## Sealed batches (0.2.0)
 
 From 0.2.0 the emitter signs a second, smaller statement with every batch: the hash of each record in it. This is the **batch seal**. It lets an auditor check, with your emitter's public key and without trusting Provantix, that the emitter itself vouched for exactly these records. It survives erasure, because a record hash never contained a value that is later erased.
@@ -120,6 +133,24 @@ const emitter = new AgentEmitter({ emitterId, tenantId, privateKeyPem, spoolDir:
 
 **Your key matters.** The proof is independent of Provantix only if the public key an auditor checks against came from you, not from Provantix. If you registered your own key (recommended), keep a copy of the public key and give it to your auditor. If Provantix generated the key, it once held the private key, and the proof is only Provantix's own attestation.
 
+## Verifying an export
+
+`verifier/` is the standalone export verifier, the same one the platform's own checks are tested against. It needs no network, no account and no installs (Node 20+, or Python 3 with only the standard library).
+
+```bash
+# Download the keys Provantix signs exports with, then check an unzipped export against them
+curl -O https://app.provantix.tech/.well-known/provantix-export-keys.json
+node verifier/verify-export.mjs <export-folder> --keys provantix-export-keys.json
+
+# Also check the emitter's own seals against the public key you hold (the strongest check)
+node verifier/verify-export.mjs <export-folder> --keys provantix-export-keys.json --emitter-keys emitter-public.pem
+
+# Python gives the same answers
+python3 verifier/python/verify_export.py <export-folder> --emitter-keys emitter-public.pem
+```
+
+It checks integrity (hashes, chain links, daily roots), the Provantix export signature against the published keys, and each record's emitter seal. Exit code 0 means verified; 1 failed integrity; 2 bad usage; 3 consistent, but authenticity was not established (unsigned, no keys given, an unknown key). Integrity alone can be recomputed by whoever edits an export, so a result of 3 is not a pass. See `verifier/README.md` and `verifier/FORMAT.md`, and `verifier/vectors/` for known-good and known-bad exports.
+
 ## Evidence is never rewritten
 
 No UPDATE or DELETE on `records`, `batches` or any chain table — not to fix a name, not to
@@ -135,6 +166,7 @@ alias layer or at the emitter; integrity problems are never traded for cosmetics
 - `test/emitter.test.mjs` — unit tests + integration through a real control plane
   (ingest → attribution → reporting → export verify)
 - `examples/emit-demo.mjs` — end-to-end demo against a running app
+- `verifier/` — the standalone export verifier (Node and Python), its format notes and test vectors
 
 ## Run tests
 
