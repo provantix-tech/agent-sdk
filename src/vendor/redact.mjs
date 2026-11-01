@@ -50,11 +50,21 @@ const RULES = [
 ];
 
 /**
- * @returns {{text: string|null, counts: Record<string, number>}}
+ * Cap for stored text summaries (tool arguments, results). 2 KB matches the hosted
+ * intake attribute cap (P3): stored content is a redacted excerpt for the drawer and
+ * the export, never the full payload.
  */
-export function redact(text) {
+export const SUMMARY_MAX_CHARS = 2000;
+
+/**
+ * @param {string|null} text
+ * @param {object} [opts]
+ * @param {number|null} [opts.maxLength] cap in characters; null means no cap
+ * @returns {{text: string|null, counts: Record<string, number>, truncated: boolean}}
+ */
+export function redact(text, { maxLength = null } = {}) {
   const counts = {};
-  if (text === null || text === undefined) return { text: null, counts };
+  if (text === null || text === undefined) return { text: null, counts, truncated: false };
   if (typeof text !== 'string') throw new TypeError('redact: text must be a string or null');
   let out = text;
   for (const rule of RULES) {
@@ -65,19 +75,26 @@ export function redact(text) {
       return r;
     });
   }
-  return { text: out, counts };
+  let truncated = false;
+  if (maxLength !== null && out.length > maxLength) {
+    out = `${out.slice(0, maxLength)} …[truncated]`;
+    truncated = true;
+  }
+  return { text: out, counts, truncated };
 }
 
 // Redact every string inside a JSON-compatible value, keeping its shape.
-export function redactDeep(value) {
+export function redactDeep(value, { maxLength = null } = {}) {
   const counts = {};
+  let truncated = false;
   const add = (c) => {
     for (const [k, v] of Object.entries(c)) counts[k] = (counts[k] ?? 0) + v;
   };
   const walk = (v) => {
     if (typeof v === 'string') {
-      const r = redact(v);
+      const r = redact(v, { maxLength });
       add(r.counts);
+      if (r.truncated) truncated = true;
       return r.text;
     }
     if (Array.isArray(v)) return v.map(walk);
@@ -88,5 +105,27 @@ export function redactDeep(value) {
     }
     return v;
   };
-  return { value: walk(value), counts };
+  return { value: walk(value), counts, truncated };
+}
+
+// P3: derive record data classes from redaction rule hits. The mapping is deterministic
+// and lives next to the rules so a new rule name forces an explicit decision here.
+const RULE_TO_DATA_CLASS = {
+  secret: 'secret',
+  email: 'pii',
+  phone: 'pii',
+  pan: 'pci',
+  iban: 'financial',
+};
+
+/**
+ * @param {Record<string, number>} counts redaction rule hit counts
+ * @returns {string[]} sorted, de-duplicated data class names
+ */
+export function dataClassesFromCounts(counts) {
+  const classes = new Set();
+  for (const [rule, n] of Object.entries(counts ?? {})) {
+    if (n > 0 && RULE_TO_DATA_CLASS[rule]) classes.add(RULE_TO_DATA_CLASS[rule]);
+  }
+  return [...classes].sort();
 }

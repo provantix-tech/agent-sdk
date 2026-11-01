@@ -5,7 +5,7 @@
 
 import { classify, CLASS } from './gate.mjs';
 import { makeHandle } from './handles.mjs';
-import { redact, redactDeep, REDACTION_PROFILE_ID } from './redact.mjs';
+import { redact, redactDeep, REDACTION_PROFILE_ID, SUMMARY_MAX_CHARS, dataClassesFromCounts } from './redact.mjs';
 import { buildBatch } from './batch.mjs';
 import { sealRecord } from './aar.mjs';
 
@@ -20,14 +20,16 @@ export class Collector {
    * @param {import('./spool.mjs').Spool} opts.spool
    * @param {number} [opts.maxBatchRecords=500]
    * @param {() => Date} [opts.clock]
+   * @param {boolean} [opts.seal=true] sign the hash of every record in each batch (the batch seal), so an auditor can check the emitter itself vouched for each record. Turn off only to match an older platform.
    */
-  constructor({ collectorId, privateKeyPem, handleKey, spool, maxBatchRecords = 500, clock = () => new Date() }) {
+  constructor({ collectorId, privateKeyPem, handleKey, spool, maxBatchRecords = 500, clock = () => new Date(), seal = true }) {
     this.collectorId = collectorId;
     this.privateKeyPem = privateKeyPem;
     this.handleKey = handleKey;
     this.spool = spool;
     this.maxBatchRecords = maxBatchRecords;
     this.clock = clock;
+    this.seal = seal;
     this.ctx = { inventoryPrincipals: new Set(), candidatePrincipals: new Set(), oboHumanIds: new Set() };
     this.pending = [];
     this.rollups = new Map();
@@ -85,9 +87,15 @@ export class Collector {
   #buildRecord(ev, decision) {
     const hint = ev.agent_hint ?? {};
     const principal = this.#principalValue(ev);
-    const contentIn = redact(ev.content?.input_text ?? null);
-    const contentOut = redact(ev.content?.output_text ?? null);
+    // P3: stored content is a redacted, truncated excerpt (2 KB), never the full payload.
+    const contentIn = redact(ev.content?.input_text ?? null, { maxLength: SUMMARY_MAX_CHARS });
+    const contentOut = redact(ev.content?.output_text ?? null, { maxLength: SUMMARY_MAX_CHARS });
     const ext = redactDeep(ev.ext ?? null);
+    // P3: data classes are derived from redaction hits and merged with emitter-declared
+    // classes; the derivation is deterministic (redact.mjs RULE_TO_DATA_CLASS).
+    const derivedClasses = dataClassesFromCounts(mergeCounts(contentIn.counts, contentOut.counts, ext.counts));
+    const dataClasses = [...new Set([...(ev.action.data_classes ?? []), ...derivedClasses])].sort();
+    const contentTruncated = contentIn.truncated || contentOut.truncated;
 
     const fields = {
       tenant_id: ev.tenant_id,
@@ -118,7 +126,7 @@ export class Collector {
         field_names: ev.action.field_names ?? [],
         record_count: ev.action.record_count ?? null,
         external_recipient: ev.action.external_recipient ?? null,
-        data_classes: ev.action.data_classes ?? [],
+        data_classes: dataClasses,
       },
       resources_touched: (ev.resources_touched ?? []).map((r) => ({
         system: r.system,
@@ -138,6 +146,7 @@ export class Collector {
       redaction: {
         profile: REDACTION_PROFILE_ID,
         counts: mergeCounts(contentIn.counts, contentOut.counts, ext.counts),
+        ...(contentTruncated ? { truncated: true } : {}),
       },
     };
 
@@ -149,6 +158,17 @@ export class Collector {
       attribution_evidence: null,
       ext: ext.value,
       user_agent: hint.user_agent ?? null,
+      // E1: human approval for a sensitive action. The approver becomes a keyed handle — the
+      // raw identifier never leaves the customer's boundary.
+      authorization: ev.authorization?.approval_id
+        ? {
+            approval_id: ev.authorization.approval_id,
+            approver: ev.authorization.approver ? makeHandle(this.handleKey, String(ev.authorization.approver)) : null,
+            policy_id: ev.authorization.policy_id ?? null,
+            ticket: ev.authorization.ticket ?? null,
+            approved_at: ev.authorization.approved_at ?? null,
+          }
+        : null,
     };
 
     return sealRecord(fields, erasable);
@@ -200,6 +220,7 @@ export class Collector {
       rollups,
       createdAt: this.clock().toISOString(),
       privateKeyPem: this.privateKeyPem,
+      seal: this.seal,
     });
     this.spool.enqueue(batch);
     this.pending = [];
@@ -213,7 +234,11 @@ export class Collector {
    */
   async drain(transport) {
     let sent = 0;
-    for (const batch of this.spool.list()) {
+    for (const queued of this.spool.list()) {
+      // A batch queued before sealing was switched on (an upgrade, or an outage that outlasted the sealing deadline) is
+      // re-signed with its seal before it is sent. Its records and its creation time are unchanged; only the envelope
+      // gains the seal, so it is accepted instead of being refused for lacking one.
+      const batch = this.seal && !queued.seal ? this.#sealQueued(queued) : queued;
       const res = await transport(batch);
       if (!res || !res.ok) {
         return { sent, remaining: this.spool.count(), error: res?.error ?? 'transport failed' };
@@ -222,6 +247,18 @@ export class Collector {
       sent += 1;
     }
     return { sent, remaining: 0, error: null };
+  }
+
+  #sealQueued(batch) {
+    return buildBatch({
+      collectorId: batch.collector_id,
+      batchSeq: batch.batch_seq,
+      records: batch.records,
+      rollups: batch.rollups,
+      createdAt: batch.created_at,
+      privateKeyPem: this.privateKeyPem,
+      seal: true,
+    });
   }
 
   /** What leaves the boundary, stated plainly for the DPO. */

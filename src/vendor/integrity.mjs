@@ -15,6 +15,11 @@ import { canonicalize } from './canonical.mjs';
 
 // Fixed order matters: it defines the Merkle leaves. Never reorder; add new fields at the end
 // with a schema version bump.
+//
+// Vendored from ledger/packages/aar-schema/src/integrity.mjs — keep in sync. Epic E
+// (2026-10-24): 'authorization' appended; records sealed before this field existed carry no
+// entry/commitment for it and recordHash/verifyRecord skip absent fields, so old records keep
+// verifying unchanged.
 export const ERASABLE_FIELDS = Object.freeze([
   'on_behalf_of',
   'delegation_chain',
@@ -23,6 +28,7 @@ export const ERASABLE_FIELDS = Object.freeze([
   'attribution_evidence',
   'ext',
   'user_agent',
+  'authorization',
 ]);
 
 const EMPTY_HASH = createHash('sha256').update('').digest();
@@ -65,10 +71,12 @@ export function merkleRoot(leaves) {
 }
 
 export function recordHash(fields, commitments) {
-  const leaves = ERASABLE_FIELDS.map((f) => {
+  // Fields sealed before they existed in the schema have no commitment: excluded from the
+  // leaf set (their absence is part of the sealed hash; stripping a commitment from a newer
+  // record still breaks verification).
+  const leaves = ERASABLE_FIELDS.flatMap((f) => {
     const c = commitments[f];
-    if (!c) throw new Error(`recordHash: missing commitment for ${f}`);
-    return Buffer.from(c, 'hex');
+    return c ? [Buffer.from(c, 'hex')] : [];
   });
   const root = merkleRoot(leaves);
   return sha256(Buffer.concat([Buffer.from(canonicalize(fields), 'utf8'), Buffer.from('|'), root]));
@@ -113,10 +121,9 @@ export function verifyRecord(stored) {
   for (const f of ERASABLE_FIELDS) {
     const entry = stored.erasable[f];
     const claimed = stored.integrity.commitments[f];
-    if (!entry || !claimed) {
-      reasons.push(`missing ${f}`);
-      continue;
-    }
+    // Absent = sealed before this field existed in the schema (append-only evolution);
+    // excluded from the hash leaf set, exactly as the sealer computed it.
+    if (!entry || !claimed) continue;
     commitments[f] = claimed;
     if (entry.erased) continue;
     const salt = Buffer.from(entry.salt, 'hex');

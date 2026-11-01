@@ -79,8 +79,12 @@ export class AgentEmitter {
    * @param {Buffer} [opts.handleKey]     HMAC key for human handles (default: persisted in
    *                                      spoolDir, else generated per process with a warning)
    * @param {number} [opts.maxBatchRecords]
+   * @param {boolean} [opts.seal=true]  sign the hash of every record in each batch (the batch seal, SDK 0.2.0 and later).
+   *                                    An auditor can then check, with your emitter's public key, that the emitter itself
+   *                                    vouched for each record. Unsealed batches are accepted until the notice period set
+   *                                    by Provantix ends; after that they are refused. Leave this on.
    */
-  constructor({ emitterId, tenantId, privateKeyPem, spoolDir = null, handleKey = null, maxBatchRecords = 200 }) {
+  constructor({ emitterId, tenantId, privateKeyPem, spoolDir = null, handleKey = null, maxBatchRecords = 200, seal = true }) {
     if (!emitterId || !tenantId || !privateKeyPem) throw new TypeError('emitterId, tenantId and privateKeyPem required');
     this.emitterId = emitterId;
     this.tenantId = tenantId;
@@ -98,6 +102,7 @@ export class AgentEmitter {
       handleKey: resolveHandleKey({ spoolDir, handleKey }),
       spool: spoolDir ? new Spool(spoolDir) : new MemorySpool(),
       maxBatchRecords,
+      seal,
     });
     // Agent principals are non-human, so the gate keeps full records; context is a safety net
     // for human on-behalf-of windows if the app supplies them.
@@ -200,6 +205,7 @@ export function aarToSourceEvent(aar, emitter) {
     content: aar.content ? { input_text: aar.content.input_text ?? null, output_text: aar.content.output_text ?? null } : undefined,
     on_behalf_of: aar.on_behalf_of ?? [],
     delegation_chain: aar.delegation_chain ?? [],
+    authorization: aar.authorization ?? undefined,
     ext: aar.ext ?? null,
   };
 }

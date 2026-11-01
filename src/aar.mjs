@@ -18,6 +18,39 @@ export const DATA_CLASSES = Object.freeze([
 
 let eventCounter = 0;
 
+// Run-id shape detection — keep the patterns in sync with
+// ledger/packages/aar-schema/src/run-id.mjs (control-plane copy).
+const RUN_ID_GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const RUN_ID_ULID_RE = /^[0-9a-hjkmnp-tv-z]{26}$/i;
+const warnedRunIds = new Set();
+
+function looksLikeRunId(value) {
+  if (typeof value !== 'string') return false;
+  const v = value.trim();
+  return RUN_ID_GUID_RE.test(v) || RUN_ID_ULID_RE.test(v);
+}
+
+/**
+ * Contract (WO-H2): action.targetSystem is the STABLE name of the system the action touched
+ * (e.g. "cruzclaw-backend", "salesforce"), never a per-run or per-object id. A GUID/ULID here
+ * mints a new "system" on every run and breaks reach, coverage and cost grouping; the
+ * per-run id belongs in action.targetEntityId (mapped to record.target_entity_id). The check
+ * is a loud warning, not a throw: a hard failure would stop all telemetry from a
+ * misconfigured emitter, and the control plane flags the same defect as a data-health
+ * finding (data_health.guid_target_system) so it cannot stay silent.
+ */
+function warnOnRunIdTargetSystem(action) {
+  if (!looksLikeRunId(action?.targetSystem)) return;
+  const value = action.targetSystem.trim();
+  if (warnedRunIds.has(value)) return;
+  warnedRunIds.add(value);
+  console.warn(
+    `[provantix-sdk] action.targetSystem "${value}" looks like a per-run id, not a system name. ` +
+    'Use a stable system name for targetSystem and pass the run id as targetEntityId instead. ' +
+    'See the SDK README "Target system contract".',
+  );
+}
+
 /**
  * Build an Agent Action Record.
  * @param {object} a
@@ -30,6 +63,9 @@ let eventCounter = 0;
  * @param {object} a.action            { type, targetSystem, targetEntityType, targetEntityId, operation, toolName, fieldNames, dataClasses, externalRecipient }
  * @param {object} [a.correlation]     { traceId, spanId, parentSpanId, sessionId, conversationId }
  * @param {object} [a.onBehalfOf]      [{ kind, id, idp }]  (human ids become handles at the boundary)
+ * @param {object} [a.authorization]   { approvalId, approver, policyId, ticket, approvedAt } —
+ *                                      human approval for a sensitive action; approver becomes
+ *                                      a handle at the boundary (Epic E)
  * @param {object} [a.model]           { provider, modelId, modelVersion, tokensIn, tokensOut, latencyMs }
  * @param {object} [a.quality]         { outcome, errorClass, humanOverride }
  * @param {object} [a.content]         { inputText, outputText } — raw text; the boundary redacts it
@@ -41,6 +77,7 @@ export function buildAAR(a) {
   if (!a.system) throw new TypeError('system required');
   const action = a.action ?? {};
   if (!action.type) throw new TypeError('action.type required');
+  warnOnRunIdTargetSystem(action);
 
   return {
     profile_version: PROFILE_VERSION,
@@ -62,6 +99,7 @@ export function buildAAR(a) {
     },
     on_behalf_of: a.onBehalfOf ?? [],
     delegation_chain: a.delegationChain ?? [],
+    authorization: a.authorization ?? null,
     correlation: {
       trace_id: a.correlation?.traceId ?? null,
       span_id: a.correlation?.spanId ?? null,
@@ -118,6 +156,14 @@ export function validateAAR(aar) {
   for (const actor of [...(aar.on_behalf_of ?? []), ...(aar.delegation_chain ?? [])]) {
     if (!['human', 'agent', 'service', 'unknown'].includes(actor.kind)) problems.push(`actor kind "${actor.kind}" invalid`);
     if (!actor.id) problems.push('actor id required');
+  }
+  if (aar.authorization != null) {
+    const az = aar.authorization;
+    if (typeof az !== 'object' || Array.isArray(az)) problems.push('authorization must be an object');
+    else {
+      if (!az.approval_id) problems.push('authorization.approval_id required');
+      if (!az.approver) problems.push('authorization.approver required');
+    }
   }
   return problems;
 }

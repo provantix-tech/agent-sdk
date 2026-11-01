@@ -82,11 +82,218 @@ test('otelGenAiToAAR maps tool and agent spans', () => {
   assert.equal(invoke.action.action_type, 'call_agent');
 });
 
+// P1: delegation chain from span parentage — a three-level trace (orchestrator chat →
+// invoke_agent → worker chat → tool) must reconstruct [orchestrator, worker] without the
+// reader ever touching span ids. A lone actor carries an empty chain.
+test('otelBatchToAARs reconstructs the delegation chain from span parentage', () => {
+  const root = {
+    ...SPAN_CHAT,
+    spanId: '1000000000000001',
+    parentSpanId: undefined,
+    attributes: { ...SPAN_CHAT.attributes, 'gen_ai.agent.id': 'orchestrator' },
+  };
+  const invoke = {
+    ...SPAN_CHAT,
+    spanId: '1000000000000002',
+    parentSpanId: '1000000000000001',
+    attributes: { 'gen_ai.operation.name': 'invoke_agent', 'gen_ai.agent.id': 'orchestrator' },
+  };
+  const worker = {
+    ...SPAN_CHAT,
+    spanId: '1000000000000003',
+    parentSpanId: '1000000000000002',
+    attributes: { ...SPAN_CHAT.attributes, 'gen_ai.agent.id': 'worker' },
+  };
+  const tool = {
+    ...SPAN_CHAT,
+    spanId: '1000000000000004',
+    parentSpanId: '1000000000000003',
+    attributes: { 'gen_ai.operation.name': 'execute_tool', 'gen_ai.tool.name': 'db.query' },
+  };
+
+  const aars = otelBatchToAARs([root, invoke, worker, tool], { tenantId: 't', emitterId: 'e' });
+  assert.equal(aars.length, 4);
+  for (const aar of aars) assert.equal(validateAAR(aar).length, 0);
+
+  const rootAar = aars.find((a) => a.agent_hint.vendor_agent_id === 'orchestrator' && a.action.action_type === 'call_model');
+  assert.deepEqual(rootAar.delegation_chain, [], 'lone actor: no delegation happened');
+
+  const invokeAar = aars.find((a) => a.action.action_type === 'call_agent');
+  assert.equal(invokeAar.action.target_entity_id, 'worker', 'callee derived from the child worker span');
+
+  const workerAar = aars.find((a) => a.agent_hint.vendor_agent_id === 'worker');
+  assert.deepEqual(workerAar.delegation_chain, [
+    { kind: 'agent', id: 'orchestrator' },
+    { kind: 'agent', id: 'worker' },
+  ]);
+
+  const toolAar = aars.find((a) => a.action.action_type === 'call_tool');
+  assert.equal(toolAar.agent_hint.vendor_agent_id, 'worker', 'tool span inherits its nearest agent ancestor');
+  assert.deepEqual(toolAar.delegation_chain, [
+    { kind: 'agent', id: 'orchestrator' },
+    { kind: 'agent', id: 'worker' },
+  ]);
+});
+
 test('otelGenAiToAAR returns null for non-GenAI spans and maps errors', () => {
   assert.equal(otelGenAiToAAR({ name: 'http.get', attributes: { 'http.route': '/x' } }, { tenantId: 't', emitterId: 'e' }), null);
   const err = otelGenAiToAAR({ ...SPAN_CHAT, status: { code: 'ERROR', message: 'rate limited' } }, { tenantId: 't', emitterId: 'e' });
   assert.equal(err.quality.outcome, 'failure');
   assert.equal(err.quality.error_class, 'rate limited');
+});
+
+// E1: provantix.approval.* attributes — mapped here, converted to a keyed handle at the
+// boundary, sealed as the erasable authorization block.
+test('otelGenAiToAAR maps provantix.approval.* into the authorization block', () => {
+  const aar = otelGenAiToAAR({
+    ...SPAN_CHAT,
+    attributes: {
+      ...SPAN_CHAT.attributes,
+      'provantix.approval.id': 'apr_9',
+      'provantix.approval.approver': 'jane@corp.example',
+      'provantix.approval.policy': 'pol-sensitive',
+      'provantix.approval.ticket': 'CHG-1001',
+    },
+  }, { tenantId: 't', emitterId: 'e' });
+  assert.equal(aar.authorization.approval_id, 'apr_9');
+  assert.equal(aar.authorization.approver, 'jane@corp.example', 'raw at mapping; the boundary converts to a handle');
+  assert.equal(aar.authorization.policy_id, 'pol-sensitive');
+  assert.equal(aar.authorization.ticket, 'CHG-1001');
+  assert.equal(validateAAR(aar).length, 0);
+
+  const bare = otelGenAiToAAR(SPAN_CHAT, { tenantId: 't', emitterId: 'e' });
+  assert.equal(bare.authorization, null);
+});
+
+test('validateAAR requires approval id and approver on the authorization block', () => {
+  const aar = buildAAR({ tenantId: 't', emitterId: 'e', system: 's', action: { type: 'delete' } });
+  aar.authorization = { ticket: 'CHG-1' };
+  const problems = validateAAR(aar);
+  assert.ok(problems.some((p) => p.includes('authorization.approval_id')));
+  assert.ok(problems.some((p) => p.includes('authorization.approver')));
+});
+
+test('the emitter seals the approver as a keyed handle; the raw id never leaves and the record verifies', async () => {
+  const { verifyRecord } = await import('../src/vendor/aar.mjs');
+  const keys = AgentEmitter.generateKeys();
+  const emitter = new AgentEmitter({
+    emitterId: 'emi_approval', tenantId: 't', privateKeyPem: keys.privateKeyPem,
+    handleKey: Buffer.alloc(32, 7),
+  });
+  emitter.emitOtelSpan({
+    ...SPAN_CHAT,
+    attributes: {
+      'gen_ai.operation.name': 'execute_tool',
+      'gen_ai.tool.name': 'crm.wipe',
+      'provantix.approval.id': 'apr_9',
+      'provantix.approval.approver': 'jane@corp.example',
+    },
+  });
+  const batch = emitter.flush();
+  assert.equal(batch.records.length, 1);
+  const rec = batch.records[0];
+  assert.equal(rec.erasable.authorization.value.approval_id, 'apr_9');
+  assert.match(rec.erasable.authorization.value.approver, /^hdl:[0-9a-f]{16}$/);
+  assert.ok(!JSON.stringify(rec).includes('jane@corp.example'), 'raw approver id must not survive sealing');
+  assert.equal(verifyRecord(rec).valid, true, `sealed record must verify: ${verifyRecord(rec).reasons?.join('; ')}`);
+});
+
+// ---------- P3: tool payloads, data classes, external recipient ----------
+
+test('otelBatchToAARs maps tool arguments/result into content and leaves prompts out', () => {
+  const [aar] = otelBatchToAARs([{
+    ...SPAN_CHAT,
+    attributes: {
+      'gen_ai.operation.name': 'execute_tool',
+      'gen_ai.tool.name': 'db.query',
+      'gen_ai.tool.call.arguments': '{"sql":"select * from t where id = 7"}',
+      'gen_ai.tool.call.result': '{"rows":1}',
+    },
+  }], { tenantId: 't', emitterId: 'e' });
+  assert.equal(aar.action.action_type, 'call_tool');
+  assert.equal(aar.content.input_text, '{"sql":"select * from t where id = 7"}');
+  assert.equal(aar.content.output_text, '{"rows":1}');
+  assert.equal(aar.action.external_recipient, null);
+  assert.equal(validateAAR(aar).length, 0);
+
+  // A chat span carries no content mapping (prompt/completion stay hash-only).
+  const chat = otelBatchToAARs([{ ...SPAN_CHAT, attributes: { ...SPAN_CHAT.attributes, 'gen_ai.content.prompt': 'secret prompt' } }], { tenantId: 't', emitterId: 'e' });
+  assert.equal(chat[0].content, undefined);
+});
+
+test('send actions carry external_recipient from messaging attributes or tool arguments', () => {
+  const [messaging] = otelBatchToAARs([{
+    ...SPAN_CHAT,
+    attributes: { 'gen_ai.system': 'acme', 'messaging.operation': 'send', 'messaging.destination.name': 'vendor-payments' },
+  }], { tenantId: 't', emitterId: 'e' });
+  assert.equal(messaging.action.action_type, 'send');
+  assert.equal(messaging.action.external_recipient, 'vendor-payments');
+  assert.equal(validateAAR(messaging).length, 0);
+
+  const [tool] = otelBatchToAARs([{
+    ...SPAN_CHAT,
+    attributes: {
+      'gen_ai.operation.name': 'execute_tool',
+      'gen_ai.tool.name': 'send_email',
+      'gen_ai.tool.call.arguments': '{"to":"client@external.com","subject":"statement"}',
+    },
+  }], { tenantId: 't', emitterId: 'e' });
+  assert.equal(tool.action.action_type, 'call_tool');
+  assert.equal(tool.action.external_recipient, 'client@external.com');
+});
+
+test('the collector seals tool arguments redacted and truncated, derives data classes, record verifies', async () => {
+  const { verifyRecord } = await import('../src/vendor/aar.mjs');
+  const keys = AgentEmitter.generateKeys();
+  const emitter = new AgentEmitter({
+    emitterId: 'emi_p3', tenantId: 't', privateKeyPem: keys.privateKeyPem,
+    handleKey: Buffer.alloc(32, 7),
+  });
+  emitter.emitOtelSpan({
+    ...SPAN_CHAT,
+    attributes: {
+      'gen_ai.operation.name': 'execute_tool',
+      'gen_ai.tool.name': 'db.query',
+      'gen_ai.tool.call.arguments': '{"sql":"select email from users","notify":"bob@corp.example"}',
+      'gen_ai.tool.call.result': '{"rows":3}',
+    },
+  });
+  const batch = emitter.flush();
+  assert.equal(batch.records.length, 1);
+  const rec = batch.records[0];
+
+  // Redacted, sealed as the erasable summary; the raw email never leaves.
+  assert.match(rec.erasable.input_summary.value, /select email from users/);
+  assert.match(rec.erasable.input_summary.value, /<email>/);
+  assert.ok(!rec.erasable.input_summary.value.includes('bob@corp.example'));
+  assert.ok(!JSON.stringify(rec).includes('bob@corp.example'), 'raw id must not survive sealing');
+  assert.equal(rec.erasable.output_summary.value, '{"rows":3}');
+
+  // Data classes derived from redaction hits; counts say what was replaced.
+  assert.deepEqual(rec.fields.action.data_classes, ['pii']);
+  assert.equal(rec.fields.redaction.counts.email, 1);
+
+  assert.equal(verifyRecord(rec).valid, true, `sealed record must verify: ${verifyRecord(rec).reasons?.join('; ')}`);
+});
+
+test('the collector truncates oversized summaries at the 2 KB cap and flags it', async () => {
+  const keys = AgentEmitter.generateKeys();
+  const emitter = new AgentEmitter({
+    emitterId: 'emi_p3big', tenantId: 't', privateKeyPem: keys.privateKeyPem,
+    handleKey: Buffer.alloc(32, 7),
+  });
+  emitter.emitOtelSpan({
+    ...SPAN_CHAT,
+    attributes: {
+      'gen_ai.operation.name': 'execute_tool',
+      'gen_ai.tool.name': 'extract.report',
+      'gen_ai.tool.call.arguments': JSON.stringify({ blob: 'x'.repeat(5000) }),
+    },
+  });
+  const rec = emitter.flush().records[0];
+  assert.ok(rec.erasable.input_summary.value.endsWith('\u2026[truncated]') || rec.erasable.input_summary.value.includes('[truncated]'));
+  assert.ok(rec.erasable.input_summary.value.length < 2100, 'summary capped near 2 KB');
+  assert.equal(rec.fields.redaction.truncated, true);
 });
 
 // ---------- integration: emitter -> control plane ----------

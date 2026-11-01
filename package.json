@@ -1,6 +1,6 @@
 {
   "name": "@provantix/agent-sdk",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Agent-side SDK for Provantix: emit Agent Action Records (AAR) and OTel GenAI spans as signed, hash-chained batches.",
   "license": "MIT",
@@ -34,5 +34,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "pg": "^8.13.1"
   }
 }
