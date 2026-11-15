@@ -1,0 +1,41 @@
+{
+  "export_version": "1.1",
+  "export_id": "exp_vector_decision-not-in-export",
+  "created_at": "2026-11-10T12:00:00.000Z",
+  "actor": "vector",
+  "filter": {},
+  "complete": true,
+  "record_count": 3,
+  "files": [
+    {
+      "path": "records.jsonl",
+      "sha256": "ca1f7e0ad5093e6b519809003c678c7e45eb316390f8c4eb131cc2a9e4e9168e",
+      "bytes": 6975
+    },
+    {
+      "path": "timeline.csv",
+      "sha256": "b99c4fe5dab37851d1c29c6b2ed2829d6a3ec13f878563b64c4a78efa1ca0ecc",
+      "bytes": 195
+    },
+    {
+      "path": "coverage.json",
+      "sha256": "050ee6b09bcee513fe35a44ae70fa5a8750705cdb924b195c60df1121924296b",
+      "bytes": 73
+    },
+    {
+      "path": "roots/2026-11-10.json",
+      "sha256": "e94e4388b8ca98a393143e312052cc9aa0704bc517a407c009a269715a8bccf6",
+      "bytes": 330
+    }
+  ],
+  "roots_included": [
+    "2026-11-10"
+  ],
+  "roots_pending": [],
+  "integrity_boundary": "collector",
+  "redaction_profile": "default-v1",
+  "emitter_proof": {
+    "sealed_batches": 0,
+    "emitters": 0
+  }
+}

@@ -1,0 +1,4 @@
+department,agent,provider,model,cost_center,product,calls,estimated_usd
+support,agent-a,p,m2,cc-200,,1,6
+support,agent-b,p,m1,cc-200,assistant,1,2
+TOTAL,,,,,,2,8

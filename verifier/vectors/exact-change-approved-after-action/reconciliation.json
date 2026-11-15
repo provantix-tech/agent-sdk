@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "statement": "This section records what Provantix compared: each approval against the action it came with. A verifier can check that the section is what Provantix signed and that each approval's coverage recomputes from the record. It does not show that an approver was the right person, that an emergency route was justified, or that the change described is what was approved in substance.",
+  "scopes": [],
+  "results": [],
+  "destination_records": [],
+  "approvals": [
+    {
+      "record_id": "01M72AZ1M03QAQJ46Z19HS4DXB",
+      "approval_id": "apr_1",
+      "present": true,
+      "authority": "verified",
+      "reasons": [
+        "The approval is for environment production.",
+        "The approval is for resource payments-api.",
+        "The approval is for change 90b83e25589598fbb9ff6478387cd9ac5b206e6643b295be7041f8d35918b6d5.",
+        "The approval is for the operation rollback.",
+        "The approval was given before the action ran."
+      ],
+      "checks": [
+        {
+          "check": "environment",
+          "status": "holds",
+          "reason": "The approval is for environment production."
+        },
+        {
+          "check": "resource",
+          "status": "holds",
+          "reason": "The approval is for resource payments-api."
+        },
+        {
+          "check": "change_digest",
+          "status": "holds",
+          "reason": "The approval is for change 90b83e25589598fbb9ff6478387cd9ac5b206e6643b295be7041f8d35918b6d5."
+        },
+        {
+          "check": "operation",
+          "status": "holds",
+          "reason": "The approval is for the operation rollback."
+        },
+        {
+          "check": "decided_before_action",
+          "status": "holds",
+          "reason": "The approval was given before the action ran."
+        }
+      ],
+      "policy_id": "prod-changes",
+      "policy_version_in_force": null
+    },
+    {
+      "record_id": "01M72AZ1M1WDEY2ZMYT05RZW43",
+      "approval_id": "apr_2",
+      "present": true,
+      "authority": "not_covered",
+      "reasons": [
+        "The approval is for environment staging, the action's was production."
+      ],
+      "checks": [
+        {
+          "check": "environment",
+          "status": "fails",
+          "reason": "The approval is for environment staging, the action's was production."
+        },
+        {
+          "check": "resource",
+          "status": "holds",
+          "reason": "The approval is for resource payments-api."
+        },
+        {
+          "check": "change_digest",
+          "status": "holds",
+          "reason": "The approval is for change 90b83e25589598fbb9ff6478387cd9ac5b206e6643b295be7041f8d35918b6d5."
+        },
+        {
+          "check": "operation",
+          "status": "holds",
+          "reason": "The approval is for the operation rollback."
+        },
+        {
+          "check": "decided_before_action",
+          "status": "holds",
+          "reason": "The approval was given before the action ran."
+        }
+      ],
+      "policy_id": "prod-changes",
+      "policy_version_in_force": null
+    },
+    {
+      "record_id": "01M72AZ1M21EJ87JB2GPPZPZFR",
+      "approval_id": "apr_3",
+      "present": true,
+      "authority": "unchecked",
+      "path": "break_glass",
+      "reasons": [
+        "Emergency (break-glass) approval: recorded as such, and not treated as a normal approval. Provantix cannot check that the emergency route was justified."
+      ],
+      "checks": [
+        {
+          "check": "environment",
+          "status": "holds",
+          "reason": "The approval is for environment production."
+        },
+        {
+          "check": "resource",
+          "status": "holds",
+          "reason": "The approval is for resource payments-api."
+        },
+        {
+          "check": "change_digest",
+          "status": "holds",
+          "reason": "The approval is for change 90b83e25589598fbb9ff6478387cd9ac5b206e6643b295be7041f8d35918b6d5."
+        },
+        {
+          "check": "operation",
+          "status": "holds",
+          "reason": "The approval is for the operation rollback."
+        },
+        {
+          "check": "decided_before_action",
+          "status": "holds",
+          "reason": "The approval was given before the action ran."
+        },
+        {
+          "check": "approval_path",
+          "status": "unchecked",
+          "reason": "Emergency (break-glass) approval: recorded as such, and not treated as a normal approval. Provantix cannot check that the emergency route was justified."
+        }
+      ],
+      "policy_id": "prod-changes",
+      "policy_version_in_force": null
+    },
+    {
+      "record_id": "01M72AZ1M3WT279D0CEE62VMN5",
+      "approval_id": "apr_4",
+      "present": true,
+      "authority": "verified",
+      "reasons": [
+        "The approval was given after the action ran."
+      ],
+      "checks": [
+        {
+          "check": "environment",
+          "status": "holds",
+          "reason": "The approval is for environment production."
+        },
+        {
+          "check": "resource",
+          "status": "holds",
+          "reason": "The approval is for resource payments-api."
+        },
+        {
+          "check": "change_digest",
+          "status": "holds",
+          "reason": "The approval is for change 90b83e25589598fbb9ff6478387cd9ac5b206e6643b295be7041f8d35918b6d5."
+        },
+        {
+          "check": "operation",
+          "status": "holds",
+          "reason": "The approval is for the operation rollback."
+        },
+        {
+          "check": "decided_before_action",
+          "status": "fails",
+          "reason": "The approval was given after the action ran."
+        }
+      ],
+      "policy_id": "prod-changes",
+      "policy_version_in_force": null
+    }
+  ],
+  "links": []
+}

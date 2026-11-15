@@ -149,7 +149,7 @@ node verifier/verify-export.mjs <export-folder> --keys provantix-export-keys.jso
 python3 verifier/python/verify_export.py <export-folder> --emitter-keys emitter-public.pem
 ```
 
-It checks integrity (hashes, chain links, daily roots), the Provantix export signature against the published keys, and each record's emitter seal. Exit code 0 means verified; 1 failed integrity; 2 bad usage; 3 consistent, but authenticity was not established (unsigned, no keys given, an unknown key). Integrity alone can be recomputed by whoever edits an export, so a result of 3 is not a pass. See `verifier/README.md` and `verifier/FORMAT.md`, and `verifier/vectors/` for known-good and known-bad exports.
+It checks integrity (hashes, chain links, daily roots), the Provantix export signature against the published keys, and each record's emitter seal. Where an export carries them, it also checks the evidence that sits on top of the records: a cost statement's figures are added up again from its cells (totals, each allocation and the chargeback files, so a figure changed after close fails even when the file hashes were rebuilt), and decisions, controls, exact-change approvals and reconciliations are checked against the records they cite. The Node verifier also checks the transparency log (`verify-log.mjs`). Exit code 0 means verified; 1 failed integrity; 2 bad usage; 3 consistent, but authenticity was not established (unsigned, no keys given, an unknown key). Integrity alone can be recomputed by whoever edits an export, so a result of 3 is not a pass. See `verifier/README.md` and `verifier/FORMAT.md`, and `verifier/vectors/` for known-good and known-bad exports.
 
 ## Evidence is never rewritten
 

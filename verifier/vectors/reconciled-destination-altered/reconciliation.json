@@ -1,0 +1,201 @@
+{
+  "version": 1,
+  "statement": "This section records what Provantix compared: the agent's claim against the record the destination system itself kept, and each approval against the action it came with. A verifier can check that the section is what Provantix signed and that each result is consistent with the destination record carried here. It does not show that the destination's record is true, that an absent record means an action did not happen, or that an approver was the right person.",
+  "scopes": [
+    {
+      "scope_id": "scp_vec",
+      "name": "Razorpay refunds",
+      "target_system": "razorpay",
+      "action_type": "issue_refund",
+      "destination_source": "src_razorpay",
+      "provider": "razorpay",
+      "statement": "Reconciled against src_razorpay for issue_refund on razorpay. A result says what the destination's record showed for one action when it was checked; an action with no record in a collected period is unverified, never a failed action."
+    }
+  ],
+  "results": [
+    {
+      "record_id": "01M6AYGVC0J4KTPPT6FE9BXY5X",
+      "scope_id": "scp_vec",
+      "state": "destination_confirmed",
+      "method": "reference",
+      "confidence": "exact",
+      "reason": "The destination's own record matches the claim, found by the refund id the agent cited. Destination status: succeeded.",
+      "destination_source": "src_razorpay",
+      "destination_external_id": "rfnd_1",
+      "destination_status": "succeeded",
+      "collection_window": {
+        "from": "2026-11-01T00:00:00.000Z",
+        "to": "2026-11-01T12:00:00.000Z"
+      },
+      "duplicate_records": null,
+      "evaluated_at": "2026-11-01T12:00:00.000Z",
+      "history": []
+    },
+    {
+      "record_id": "01M6AYGVC1BW9G4J55SSAW5DSG",
+      "scope_id": "scp_vec",
+      "state": "conflicting",
+      "method": "reference",
+      "confidence": "exact",
+      "reason": "The destination recorded something different: amount (claimed 5000, destination 500).",
+      "destination_source": "src_razorpay",
+      "destination_external_id": "rfnd_2",
+      "destination_status": "succeeded",
+      "collection_window": {
+        "from": "2026-11-01T00:00:00.000Z",
+        "to": "2026-11-01T12:00:00.000Z"
+      },
+      "duplicate_records": null,
+      "evaluated_at": "2026-11-01T12:00:00.000Z",
+      "history": []
+    },
+    {
+      "record_id": "01M6AYGVC2HM2BD8G95F8MVF5F",
+      "scope_id": "scp_vec",
+      "state": "pending",
+      "method": null,
+      "confidence": null,
+      "reason": "Too soon to expect the destination's record.",
+      "destination_source": null,
+      "destination_external_id": null,
+      "destination_status": null,
+      "collection_window": {
+        "from": "2026-11-01T00:00:00.000Z",
+        "to": "2026-11-01T12:00:00.000Z"
+      },
+      "duplicate_records": null,
+      "evaluated_at": "2026-11-01T12:00:00.000Z",
+      "history": []
+    },
+    {
+      "record_id": "01M6AYGVC3FXR6KME3XR7NXNYM",
+      "scope_id": "scp_vec",
+      "state": "unverified",
+      "method": null,
+      "confidence": null,
+      "reason": "No matching record was found in a fully collected period, and the claim cites no id the destination could be asked about. Absence found by search is not evidence that the action did not happen.",
+      "destination_source": null,
+      "destination_external_id": null,
+      "destination_status": null,
+      "collection_window": {
+        "from": "2026-11-01T00:00:00.000Z",
+        "to": "2026-11-01T12:00:00.000Z"
+      },
+      "duplicate_records": null,
+      "evaluated_at": "2026-11-01T12:00:00.000Z",
+      "history": []
+    },
+    {
+      "record_id": "01M6AYGVC48WEZSRTYEMWNTFXX",
+      "scope_id": "scp_vec",
+      "state": "destination_confirmed",
+      "method": "reference",
+      "confidence": "exact",
+      "reason": "The destination's own record matches the claim, found by the refund id the agent cited. Destination status: succeeded.",
+      "destination_source": "src_razorpay",
+      "destination_external_id": "rfnd_1",
+      "destination_status": "succeeded",
+      "collection_window": {
+        "from": "2026-11-01T00:00:00.000Z",
+        "to": "2026-11-01T12:00:00.000Z"
+      },
+      "duplicate_records": null,
+      "evaluated_at": "2026-11-01T12:00:00.000Z",
+      "history": []
+    }
+  ],
+  "destination_records": [
+    {
+      "source_id": "src_razorpay",
+      "external_id": "rfnd_1",
+      "kind": "refund",
+      "payment_ref": "pay_1",
+      "amount_minor": 4000,
+      "currency": "USD",
+      "status": "succeeded",
+      "failure_reason": null,
+      "destination_created_at": "2026-11-01T07:12:00.000Z",
+      "action_id": "act_1",
+      "provenance": {
+        "api": "vector",
+        "call": "GET /v1/refunds/rfnd_1"
+      },
+      "status_history": [
+        {
+          "seen_at": "2026-11-01T12:00:00.000Z",
+          "status": "succeeded",
+          "amount_minor": 5000,
+          "raw_hash": null
+        }
+      ]
+    },
+    {
+      "source_id": "src_razorpay",
+      "external_id": "rfnd_2",
+      "kind": "refund",
+      "payment_ref": "pay_2",
+      "amount_minor": 500,
+      "currency": "USD",
+      "status": "succeeded",
+      "failure_reason": null,
+      "destination_created_at": "2026-11-01T07:12:00.000Z",
+      "action_id": "act_2",
+      "provenance": {
+        "api": "vector",
+        "call": "GET /v1/refunds/rfnd_2"
+      },
+      "status_history": [
+        {
+          "seen_at": "2026-11-01T12:00:00.000Z",
+          "status": "succeeded",
+          "amount_minor": 500,
+          "raw_hash": null
+        }
+      ]
+    }
+  ],
+  "approvals": [
+    {
+      "record_id": "01M6AYGVC0J4KTPPT6FE9BXY5X",
+      "approval_id": "apr_1",
+      "present": true,
+      "authority": "verified",
+      "reasons": [
+        "The approval is for razorpay."
+      ],
+      "checks": [],
+      "policy_id": "refunds",
+      "policy_version_in_force": "3"
+    },
+    {
+      "record_id": "01M6AYGVC1BW9G4J55SSAW5DSG",
+      "approval_id": "apr_2",
+      "present": true,
+      "authority": "not_covered",
+      "reasons": [
+        "The action was 5000, over the approved limit of 1000 (minor units)."
+      ],
+      "checks": [],
+      "policy_id": "refunds",
+      "policy_version_in_force": null
+    }
+  ],
+  "links": [
+    {
+      "original_record_id": "01M6AYGVC0J4KTPPT6FE9BXY5X",
+      "kind": "retry",
+      "occurred_at": "2026-11-01T07:15:00.000Z",
+      "origin": "detected",
+      "later_record_id": "01M6AYGVC48WEZSRTYEMWNTFXX",
+      "external_ref": "act_1"
+    },
+    {
+      "original_record_id": "01M6AYGVC0J4KTPPT6FE9BXY5X",
+      "kind": "reversal",
+      "occurred_at": "2026-11-01T09:00:00.000Z",
+      "origin": "destination",
+      "later_record_id": null,
+      "external_ref": "trr_1"
+    }
+  ]
+}

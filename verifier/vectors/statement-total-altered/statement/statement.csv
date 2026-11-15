@@ -1,0 +1,20 @@
+section,kind,name,detail,calls,unpriced_calls,tokens_in,tokens_out,cache_read,cache_write,amount,currency
+1 totals by provider and model,estimated,p,m2,2,0,2000,1000,0,0,12,USD
+1 totals by provider and model,estimated,p,m1,4,0,4000,2000,0,0,8,USD
+3 allocation by department,estimated,sales,,3,0,3000,1500,0,0,10,USD
+3 allocation by department,estimated,support,,2,0,2000,1000,0,0,8,USD
+3 allocation by department,estimated,(unallocated),,1,0,1000,500,0,0,2,USD
+3 allocation by cost_center,estimated,cc-200,,2,0,2000,1000,0,0,8,USD
+3 allocation by cost_center,estimated,(unallocated),,2,0,2000,1000,0,0,8,USD
+3 allocation by cost_center,estimated,cc-100,,2,0,2000,1000,0,0,4,USD
+3 allocation by product,estimated,(unallocated),,3,0,3000,1500,0,0,14,USD
+3 allocation by product,estimated,assistant,,3,0,3000,1500,0,0,6,USD
+3 allocation by agent,estimated,agent-a,,3,0,3000,1500,0,0,10,USD
+3 allocation by agent,estimated,agent-b,,2,0,2000,1000,0,0,8,USD
+3 allocation by agent,estimated,agent-c,,1,0,1000,500,0,0,2,USD
+5 avoidable cost,estimated,Calls that failed,"A failed model call is often still charged for what it was sent. This is the price-table estimate of those calls, not a statement of what the provider billed.",0,0,,,,,0,USD
+5 avoidable cost,estimated,Runs that ended in failure,"Assumes what was done before the failure did not reach its goal. A run that failed late may have finished part of its work; the records cannot say. Whether a run was abandoned is not recorded, so only failure counts.",0,0,,,,,0,USD
+5 avoidable cost,estimated,Retries,A retry that succeeded was needed to get the work done. The cost of retries that failed again is what assumes the repeat was not needed.,0,0,,,,,0,USD
+5 avoidable cost,estimated,Calls repeated in a row,"Assumes the repeats beyond the first were not needed. A poll, a pagination that does not change the target or a retry policy looks the same in the records.",0,0,,,,,0,USD
+5 avoidable cost,estimated,Loops,Assumes calls beyond the 5th with identical content did not add anything. Only calls that carry a content hash can be checked.,0,0,,,,,0,USD
+5 avoidable cost,estimated,Runs cut off by a limit,Assumes the work was not finished when the limit was reached. Only model calls whose source states why they stopped can be seen; a step limit is not recorded by any source Provantix reads.,0,0,,,,,0,USD

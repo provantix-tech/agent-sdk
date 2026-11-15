@@ -132,5 +132,272 @@
       "total": 5,
       "failed": 2
     }
+  },
+  "reconciled-valid": {
+    "ok": true,
+    "failing": [],
+    "reconciliation": {
+      "results": 5,
+      "checked": 3,
+      "approvals": 2,
+      "links": 2
+    }
+  },
+  "reconciled-state-flipped": {
+    "ok": false,
+    "failing": [
+      "reconciliation: results consistent with the destination records carried"
+    ]
+  },
+  "reconciled-destination-altered": {
+    "ok": false,
+    "failing": [
+      "reconciliation: results consistent with the destination records carried"
+    ]
+  },
+  "reconciled-confirmed-without-record": {
+    "ok": false,
+    "failing": [
+      "reconciliation: every confirmed result rests on a destination record carried"
+    ]
+  },
+  "reconciled-binding-forged": {
+    "ok": false,
+    "failing": [
+      "approval binding: results recompute from the records"
+    ]
+  },
+  "reconciled-unknown-record": {
+    "ok": false,
+    "failing": [
+      "reconciliation: structure"
+    ]
+  },
+  "reconciled-edited-after-signing": {
+    "ok": false,
+    "failing": [
+      "file hash: reconciliation.json"
+    ]
+  },
+  "reconciled-payment-alias": {
+    "ok": true,
+    "failing": [],
+    "reconciliation": {
+      "results": 5,
+      "checked": 3,
+      "approvals": 2,
+      "links": 2
+    }
+  },
+  "reconciled-payment-mismatch": {
+    "ok": false,
+    "failing": [
+      "reconciliation: results consistent with the destination records carried"
+    ]
+  },
+  "decision-valid": {
+    "ok": true,
+    "failing": [],
+    "decision_evidence": {
+      "present": true,
+      "decisions": 2,
+      "actions_citing": 2,
+      "linked": 2,
+      "mismatched": 0,
+      "duplicates": 0,
+      "not_in_scope": 0,
+      "undelivered": 0,
+      "malformed": 0
+    }
+  },
+  "decision-swapped-reference": {
+    "ok": false,
+    "failing": [
+      "decision evidence: every decision agrees with the action that cites it"
+    ],
+    "decision_evidence": {
+      "decisions": 2,
+      "actions_citing": 2,
+      "linked": 1,
+      "mismatched": 1
+    }
+  },
+  "decision-wrong-action": {
+    "ok": false,
+    "failing": [
+      "decision evidence: every decision agrees with the action that cites it"
+    ],
+    "decision_evidence": {
+      "mismatched": 1,
+      "undelivered": 1
+    }
+  },
+  "decision-duplicate-id": {
+    "ok": false,
+    "failing": [
+      "decision evidence: every decision agrees with the action that cites it"
+    ],
+    "decision_evidence": {
+      "duplicates": 1
+    }
+  },
+  "decision-malformed": {
+    "ok": false,
+    "failing": [
+      "decision evidence: decisions are well formed"
+    ],
+    "decision_evidence": {
+      "malformed": 1
+    }
+  },
+  "decision-malformed-model-ref": {
+    "ok": false,
+    "failing": [
+      "decision evidence: decisions are well formed"
+    ],
+    "decision_evidence": {
+      "malformed": 1
+    }
+  },
+  "decision-not-in-export": {
+    "ok": true,
+    "failing": [],
+    "decision_evidence": {
+      "decisions": 1,
+      "actions_citing": 2,
+      "linked": 1,
+      "not_in_scope": 1
+    }
+  },
+  "control-valid": {
+    "ok": true,
+    "failing": [],
+    "control_evidence": {
+      "present": true,
+      "controls": 2,
+      "actions_citing": 2,
+      "linked": 2,
+      "unbound": 0,
+      "mismatched": 0,
+      "duplicates": 0,
+      "not_in_scope": 0,
+      "malformed": 0,
+      "denied_cited": 1
+    }
+  },
+  "control-swapped-reference": {
+    "ok": false,
+    "failing": [
+      "control evidence: every control decision agrees with the action that cites it"
+    ],
+    "control_evidence": {
+      "controls": 2,
+      "actions_citing": 2,
+      "linked": 1,
+      "mismatched": 1
+    }
+  },
+  "control-duplicate-id": {
+    "ok": false,
+    "failing": [
+      "control evidence: every control decision agrees with the action that cites it"
+    ],
+    "control_evidence": {
+      "duplicates": 1
+    }
+  },
+  "control-malformed": {
+    "ok": false,
+    "failing": [
+      "control evidence: control decisions are well formed"
+    ],
+    "control_evidence": {
+      "malformed": 1
+    }
+  },
+  "control-unbound": {
+    "ok": true,
+    "failing": [],
+    "control_evidence": {
+      "controls": 1,
+      "actions_citing": 1,
+      "linked": 0,
+      "unbound": 1
+    }
+  },
+  "control-not-in-export": {
+    "ok": true,
+    "failing": [],
+    "control_evidence": {
+      "controls": 1,
+      "actions_citing": 2,
+      "linked": 1,
+      "not_in_scope": 1
+    }
+  },
+  "exact-change-valid": {
+    "ok": true,
+    "failing": [],
+    "reconciliation": {
+      "approvals": 4
+    }
+  },
+  "exact-change-environment-forged": {
+    "ok": false,
+    "failing": [
+      "approval binding: results recompute from the records"
+    ]
+  },
+  "exact-change-break-glass-hidden": {
+    "ok": false,
+    "failing": [
+      "approval binding: results recompute from the records"
+    ]
+  },
+  "exact-change-approved-after-action": {
+    "ok": false,
+    "failing": [
+      "approval binding: results recompute from the records"
+    ]
+  },
+  "exact-change-digest-swapped": {
+    "ok": false,
+    "failing": [
+      "approval binding: results recompute from the records"
+    ]
+  },
+  "statement-valid": {
+    "ok": true,
+    "failing": []
+  },
+  "statement-cell-altered": {
+    "ok": false,
+    "failing": [
+      "statement: total equals the cells",
+      "statement: totals by provider and model equal the cells",
+      "statement: allocation by department equals the cells and adds up to the total",
+      "statement: allocation by cost_center equals the cells and adds up to the total",
+      "statement: allocation by product equals the cells and adds up to the total",
+      "statement: allocation by agent equals the cells and adds up to the total"
+    ]
+  },
+  "statement-total-altered": {
+    "ok": false,
+    "failing": [
+      "statement: total equals the cells",
+      "statement: totals by provider and model equal the cells",
+      "statement: allocation by department equals the cells and adds up to the total",
+      "statement: allocation by cost_center equals the cells and adds up to the total",
+      "statement: allocation by product equals the cells and adds up to the total",
+      "statement: allocation by agent equals the cells and adds up to the total",
+      "statement: cover total equals the total",
+      "statement: chargeback files add up to the total"
+    ]
+  },
+  "statement-chargeback-altered": {
+    "ok": false,
+    "failing": [
+      "statement: chargeback files add up to the total"
+    ]
   }
 }

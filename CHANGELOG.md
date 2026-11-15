@@ -1,5 +1,9 @@
 # Changelog
 
+## Verifier update (no SDK change)
+
+- `verifier/` now matches the verifier the platform ships: cost statements are re-added from their cells (total, totals by provider and model, each allocation, the cover total and the chargeback files), decisions, controls, exact-change approvals and reconciliations are checked against the records they cite, and the transparency log and its time-stamp check (`verify-log.mjs`, `rfc3161.mjs`) are included, with the specification, change history, conformance runner and all test vectors. The Node and Python verifiers agree on every vector.
+
 ## 0.3.0
 
 - **Location.** `new AgentEmitter({ location })` says where the emitter runs and what it acts on, as short codes: `{ runtime: { provider, region, zone, country }, target: { region, country } }`. With no setting it reads the cloud region it runs in (`AWS_REGION`, `GOOGLE_CLOUD_REGION`, `FLY_REGION`, `VERCEL_REGION`) when one is set. `buildAAR({ location })` overrides it for one action. The location is part of the sealed record, so the seal and the batch signature cover it, and Provantix shows it as declared. Nothing finer than a country is kept: a city, an address or free text is dropped before sealing, and the platform refuses a record that carries one.

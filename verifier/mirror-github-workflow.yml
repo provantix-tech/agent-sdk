@@ -1,0 +1,58 @@
+# Keep your own copy of Provantix's signed transparency-log heads, and check the log every day.
+#
+# Put this file at .github/workflows/provantix-log-mirror.yml in a repository you control, together with two other files in the
+# repository root: verify-log.mjs (from the Provantix verification kit) and provantix-log-keys.json (the log's public keys, which you
+# fetched once from https://app.provantix.tech/.well-known/provantix-log-keys.json and keep; do not refresh them from the same server).
+#
+# What it does. Each day it runs verify-log.mjs against the public log. The tool recomputes the whole tree, checks the signed head, and
+# checks that every head you kept earlier is still the start of the log. If it passes, the head is added to mirror-state.json and
+# committed: your repository's history is then a dated record, held by you and not by Provantix, of every head Provantix published.
+# If the log was rewritten, the run fails (GitHub emails the people watching the repository), and the signed evidence is committed and
+# attached to the run.
+#
+# What this gives you, and what it does not. It makes a rewrite of the log detectable by you, and gives you Provantix's own signature
+# on what it published earlier. It cannot show what Provantix did before the first run, and a copy kept by one party shows only what
+# that party was shown. It adds to independence only to the extent that the repository is held by someone who is not Provantix.
+name: provantix-log-mirror
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check the log and keep its heads
+        run: node verify-log.mjs https://app.provantix.tech --keys provantix-log-keys.json --state mirror-state.json
+      - name: Commit the new head
+        if: success()
+        run: |
+          git config user.name "provantix-log-mirror"
+          git config user.email "provantix-log-mirror@users.noreply.github.com"
+          git add mirror-state.json
+          git diff --cached --quiet || git commit -m "Provantix log head $(date -u +%F)"
+          git push
+      - name: Keep the evidence if the log failed a check
+        if: failure()
+        run: |
+          if [ -f mirror-state.json.conflict.json ]; then
+            git config user.name "provantix-log-mirror"
+            git config user.email "provantix-log-mirror@users.noreply.github.com"
+            git add mirror-state.json.conflict.json
+            git commit -m "Provantix log failed a check $(date -u +%F): signed evidence" && git push
+          fi
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: log-evidence
+          path: mirror-state.json.conflict.json
+          if-no-files-found: ignore

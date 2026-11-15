@@ -1,0 +1,51 @@
+{
+  "export_version": "1.1",
+  "export_id": "exp_vector_reconciled-binding-forged",
+  "created_at": "2026-11-01T12:00:00.000Z",
+  "actor": "vector",
+  "filter": {},
+  "complete": true,
+  "record_count": 5,
+  "files": [
+    {
+      "path": "records.jsonl",
+      "sha256": "28dc8b66cbd97eb36d650836175f29007d98ce4a4c69552fa82809b8a3eb6a27",
+      "bytes": 11367
+    },
+    {
+      "path": "timeline.csv",
+      "sha256": "f1ebbc57a9fb31922f7b041c758dad3e0be8e5506544a65d0c93cc4e4a6e9e67",
+      "bytes": 313
+    },
+    {
+      "path": "coverage.json",
+      "sha256": "28de7a19b594249ab85ece037319d940fd421c5ff5a3aaf1c5b5b93d143d849c",
+      "bytes": 73
+    },
+    {
+      "path": "roots/2026-11-01.json",
+      "sha256": "1ca3139737b19e4869385ca1aed15dd00dfb80c6e7f7c80132a670523abd3a8c",
+      "bytes": 329
+    },
+    {
+      "path": "reconciliation.json",
+      "sha256": "bc5be6d0cac35ab7040b07807eb0429226611c10e405c2b2f8c85daa0934d71b",
+      "bytes": 6740
+    }
+  ],
+  "roots_included": [
+    "2026-11-01"
+  ],
+  "roots_pending": [],
+  "integrity_boundary": "collector",
+  "redaction_profile": "default-v1",
+  "emitter_proof": {
+    "sealed_batches": 0,
+    "emitters": 0
+  },
+  "reconciliation": {
+    "results": 5,
+    "approvals": 2,
+    "links": 2
+  }
+}

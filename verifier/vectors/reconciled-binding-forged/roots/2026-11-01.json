@@ -1,0 +1,12 @@
+{
+  "day": "2026-11-01",
+  "tenant_root": "ff14e0e56f0501959242e85f8302c6f6da0e786456812979d66ddcec84a8b9d2",
+  "prev_tenant_root": null,
+  "chains": {
+    "t_vector|otel:emi_recon01|2026-11-01": {
+      "root": "ff14e0e56f0501959242e85f8302c6f6da0e786456812979d66ddcec84a8b9d2",
+      "count": 5
+    }
+  },
+  "record_count": 5
+}

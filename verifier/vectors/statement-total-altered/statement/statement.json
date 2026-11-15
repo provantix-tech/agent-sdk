@@ -1,0 +1,620 @@
+{
+  "to": "2026-10-31",
+  "from": "2026-10-01",
+  "cover": {
+    "totals": {
+      "kind": "estimated",
+      "calls": 6,
+      "estimated_usd": 20,
+      "unpriced_calls": 0
+    },
+    "warnings": [
+      "This is cost evidence for AI and AI agents only. It supports an audit; it is not an audited financial statement.",
+      "The provider-reported total is partial: OpenAI (not_connected), Anthropic (not_connected), Kimi (Moonshot AI) (not_connected), OpenRouter (not_connected), Gemini (Google) (not_connected), GLM (Zhipu AI, BigModel) (no_report_from_provider), DeepSeek (no_report_from_provider), AWS Bedrock (not_connected), Google Vertex AI (not_connected), Azure OpenAI (not_connected), LiteLLM and other gateways (not_connected).",
+      "Source otel:emi-1 sent records on 5 of 31 days."
+    ],
+    "provider_total_partial": true,
+    "provider_reported_total": []
+  },
+  "kinds": {
+    "estimated": "estimated from your own price table",
+    "reconciled": "compared with the provider's figure",
+    "provider_reported": "the provider's own figure, as fetched"
+  },
+  "scope": "This is cost evidence for AI and AI agents only. It supports an audit; it is not an audited financial statement.",
+  "period": "2026-10",
+  "schema": "provantix.cost_statement.v1",
+  "totals": {
+    "calls": 6,
+    "cost_usd": 25,
+    "tokens_in": 6000,
+    "cache_read": 0,
+    "tokens_out": 3000,
+    "cache_write": 0,
+    "unpriced_calls": 0
+  },
+  "version": 1,
+  "sections": {
+    "1": {
+      "kinds": {
+        "estimated": "estimated from your own price table",
+        "reconciled": "compared with the provider's figure",
+        "provider_reported": "the provider's own figure, as fetched"
+      },
+      "title": "Totals by provider and model",
+      "provider_total": [],
+      "provider_figures": [],
+      "by_provider_model": [
+        {
+          "kind": "estimated",
+          "calls": 2,
+          "model": "m2",
+          "cost_usd": 12,
+          "provider": "p",
+          "tokens_in": 2000,
+          "cache_read": 0,
+          "tokens_out": 1000,
+          "cache_write": 0,
+          "unpriced_calls": 0
+        },
+        {
+          "kind": "estimated",
+          "calls": 4,
+          "model": "m1",
+          "cost_usd": 8,
+          "provider": "p",
+          "tokens_in": 4000,
+          "cache_read": 0,
+          "tokens_out": 2000,
+          "cache_write": 0,
+          "unpriced_calls": 0
+        }
+      ],
+      "provider_total_partial": true,
+      "provider_reported_by_provider": []
+    },
+    "2": {
+      "kind": "reconciled",
+      "title": "Reconciliation",
+      "settling": [],
+      "tolerance": {
+        "cost": 0.05,
+        "tokens": 0.02,
+        "min_tokens": 1000,
+        "settle_hours": {
+          "kimi": 36,
+          "openai": 24,
+          "anthropic": 6,
+          "openrouter": 36
+        }
+      },
+      "by_provider": [],
+      "not_connected": [],
+      "provider_days": []
+    },
+    "3": {
+      "kind": "estimated",
+      "agent": [
+        {
+          "kind": "estimated",
+          "agent": "agent-a",
+          "calls": 3,
+          "cost_usd": 10,
+          "tokens_in": 3000,
+          "cache_read": 0,
+          "tokens_out": 1500,
+          "cache_write": 0,
+          "unallocated": false,
+          "unpriced_calls": 0
+        },
+        {
+          "kind": "estimated",
+          "agent": "agent-b",
+          "calls": 2,
+          "cost_usd": 8,
+          "tokens_in": 2000,
+          "cache_read": 0,
+          "tokens_out": 1000,
+          "cache_write": 0,
+          "unallocated": false,
+          "unpriced_calls": 0
+        },
+        {
+          "kind": "estimated",
+          "agent": "agent-c",
+          "calls": 1,
+          "cost_usd": 2,
+          "tokens_in": 1000,
+          "cache_read": 0,
+          "tokens_out": 500,
+          "cache_write": 0,
+          "unallocated": false,
+          "unpriced_calls": 0
+        }
+      ],
+      "title": "Allocation",
+      "product": [
+        {
+          "kind": "estimated",
+          "calls": 3,
+          "product": "(unallocated)",
+          "cost_usd": 14,
+          "tokens_in": 3000,
+          "cache_read": 0,
+          "tokens_out": 1500,
+          "cache_write": 0,
+          "unallocated": true,
+          "unpriced_calls": 0
+        },
+        {
+          "kind": "estimated",
+          "calls": 3,
+          "product": "assistant",
+          "cost_usd": 6,
+          "tokens_in": 3000,
+          "cache_read": 0,
+          "tokens_out": 1500,
+          "cache_write": 0,
+          "unallocated": false,
+          "unpriced_calls": 0
+        }
+      ],
+      "department": [
+        {
+          "kind": "estimated",
+          "calls": 3,
+          "cost_usd": 10,
+          "tokens_in": 3000,
+          "cache_read": 0,
+          "department": "sales",
+          "tokens_out": 1500,
+          "cache_write": 0,
+          "unallocated": false,
+          "unpriced_calls": 0
+        },
+        {
+          "kind": "estimated",
+          "calls": 2,
+          "cost_usd": 8,
+          "tokens_in": 2000,
+          "cache_read": 0,
+          "department": "support",
+          "tokens_out": 1000,
+          "cache_write": 0,
+          "unallocated": false,
+          "unpriced_calls": 0
+        },
+        {
+          "kind": "estimated",
+          "calls": 1,
+          "cost_usd": 2,
+          "tokens_in": 1000,
+          "cache_read": 0,
+          "department": "(unallocated)",
+          "tokens_out": 500,
+          "cache_write": 0,
+          "unallocated": true,
+          "unpriced_calls": 0
+        }
+      ],
+      "cost_center": [
+        {
+          "kind": "estimated",
+          "calls": 2,
+          "cost_usd": 8,
+          "tokens_in": 2000,
+          "cache_read": 0,
+          "tokens_out": 1000,
+          "cache_write": 0,
+          "cost_center": "cc-200",
+          "unallocated": false,
+          "unpriced_calls": 0
+        },
+        {
+          "kind": "estimated",
+          "calls": 2,
+          "cost_usd": 8,
+          "tokens_in": 2000,
+          "cache_read": 0,
+          "tokens_out": 1000,
+          "cache_write": 0,
+          "cost_center": "(unallocated)",
+          "unallocated": true,
+          "unpriced_calls": 0
+        },
+        {
+          "kind": "estimated",
+          "calls": 2,
+          "cost_usd": 4,
+          "tokens_in": 2000,
+          "cache_read": 0,
+          "tokens_out": 1000,
+          "cache_write": 0,
+          "cost_center": "cc-100",
+          "unallocated": false,
+          "unpriced_calls": 0
+        }
+      ],
+      "each_sums_to_total": true
+    },
+    "4": {
+      "rows": [],
+      "title": "Budgets"
+    },
+    "5": {
+      "kind": "estimated",
+      "title": "Avoidable cost",
+      "caching": {
+        "kind": "estimated",
+        "share": null,
+        "net_usd": 0,
+        "saved_usd": 0,
+        "write_cost_usd": 0
+      },
+      "tool_calls": [
+        {
+          "usd": 0,
+          "item": "off_list",
+          "kind": "estimated",
+          "calls": 0,
+          "label": "Calls to a tool not on the declared list"
+        },
+        {
+          "usd": 0,
+          "item": "denied_made",
+          "kind": "estimated",
+          "calls": 0,
+          "label": "Calls a control denied that were recorded as executed"
+        },
+        {
+          "usd": 0,
+          "item": "after_answer",
+          "kind": "estimated",
+          "calls": 0,
+          "label": "Tool calls made after the last model call"
+        },
+        {
+          "usd": 0,
+          "item": "duplicates",
+          "kind": "estimated",
+          "calls": 0,
+          "label": "The same tool with the same content in one run"
+        },
+        {
+          "usd": 0,
+          "item": "mostly_fail",
+          "kind": "estimated",
+          "calls": 0,
+          "label": "Tools that mostly fail"
+        }
+      ],
+      "savings_register": {
+        "caveat": "This shows what happened to the cost after the decision. It does not show that the decision caused it.",
+        "entries": 0,
+        "never_added_together": true,
+        "checked_saving_weekly_usd": 0,
+        "estimated_weekly_usd_awaiting_a_result": 0
+      },
+      "where_the_tokens_go": [
+        {
+          "kind": "estimated",
+          "label": "Context grows through a run",
+          "state": "too_thin",
+          "insight": "context_growth",
+          "candidates": 0
+        },
+        {
+          "kind": "estimated",
+          "label": "Cost by step position",
+          "state": "too_thin",
+          "insight": "step_position",
+          "candidates": 0
+        },
+        {
+          "kind": "estimated",
+          "label": "Calls with unusually large output",
+          "state": "too_thin",
+          "insight": "large_outputs",
+          "candidates": 0
+        },
+        {
+          "kind": "estimated",
+          "label": "Reasoning tokens",
+          "state": "too_thin",
+          "insight": "reasoning",
+          "candidates": 0
+        },
+        {
+          "kind": "estimated",
+          "label": "Small calls on a high-priced model",
+          "state": "too_thin",
+          "insight": "model_fit",
+          "candidates": 0
+        },
+        {
+          "kind": "estimated",
+          "label": "Calls that could wait for a batch price",
+          "state": "too_thin",
+          "insight": "batch",
+          "candidates": 0
+        },
+        {
+          "kind": "estimated",
+          "label": "Scheduled spend with no action elsewhere",
+          "state": "too_thin",
+          "insight": "idle_spend",
+          "candidates": 0
+        },
+        {
+          "kind": "estimated",
+          "label": "Most expensive runs",
+          "state": "ok",
+          "insight": "expensive_runs",
+          "candidates": 6
+        }
+      ],
+      "failure_and_repetition": {
+        "lines": [
+          {
+            "usd": 0,
+            "kind": "estimated",
+            "line": "failed_calls",
+            "calls": 0,
+            "label": "Calls that failed",
+            "assumption": "A failed model call is often still charged for what it was sent. This is the price-table estimate of those calls, not a statement of what the provider billed.",
+            "unpriced_calls": 0
+          },
+          {
+            "usd": 0,
+            "kind": "estimated",
+            "line": "failed_runs",
+            "calls": 0,
+            "label": "Runs that ended in failure",
+            "assumption": "Assumes what was done before the failure did not reach its goal. A run that failed late may have finished part of its work; the records cannot say. Whether a run was abandoned is not recorded, so only failure counts.",
+            "unpriced_calls": 0
+          },
+          {
+            "usd": 0,
+            "kind": "estimated",
+            "line": "retries",
+            "calls": 0,
+            "label": "Retries",
+            "assumption": "A retry that succeeded was needed to get the work done. The cost of retries that failed again is what assumes the repeat was not needed.",
+            "unpriced_calls": 0
+          },
+          {
+            "usd": 0,
+            "kind": "estimated",
+            "line": "repeated_calls",
+            "calls": 0,
+            "label": "Calls repeated in a row",
+            "assumption": "Assumes the repeats beyond the first were not needed. A poll, a pagination that does not change the target or a retry policy looks the same in the records.",
+            "unpriced_calls": 0
+          },
+          {
+            "usd": 0,
+            "kind": "estimated",
+            "line": "loops",
+            "calls": 0,
+            "label": "Loops",
+            "assumption": "Assumes calls beyond the 5th with identical content did not add anything. Only calls that carry a content hash can be checked.",
+            "unpriced_calls": 0
+          },
+          {
+            "usd": 0,
+            "kind": "estimated",
+            "line": "limit_runs",
+            "calls": 0,
+            "label": "Runs cut off by a limit",
+            "assumption": "Assumes the work was not finished when the limit was reached. Only model calls whose source states why they stopped can be seen; a step limit is not recorded by any source Provantix reads.",
+            "unpriced_calls": 0
+          }
+        ],
+        "counted_once_usd": 0
+      }
+    },
+    "6": {
+      "kind": "estimated",
+      "note": "Total shown for closed incidents (frozen at close); an open incident has no frozen figure.",
+      "title": "Incidents with a cost",
+      "incidents": []
+    },
+    "7": {
+      "title": "Coverage",
+      "sources": [
+        {
+          "gap": true,
+          "source": "otel:emi-1",
+          "of_days": 31,
+          "records": 6,
+          "last_day": "2026-10-21",
+          "first_day": "2026-10-03",
+          "days_with_records": 5
+        }
+      ],
+      "providers": [],
+      "statement": "A gap in coverage is stated because a clean statement over a period in which a source was silent proves less than it appears to.",
+      "days_in_period": 31
+    },
+    "8": {
+      "title": "Method",
+      "formulas": {
+        "period": "A record belongs to the period of the UTC day it was ingested.",
+        "tokens": "tokens_in is all input including the cached part; tokens_out is all output including reasoning.",
+        "savings": "Estimated savings are projections. Checked savings are read from the evidence after a window, per unit. The two are never added together.",
+        "allocation": "By the resolved tag on each record (a tag on the record, then on the agent, then a person's department, then a rule). A call with no value is its own \"(unallocated)\" line and is never spread over the others.",
+        "estimated_cost": "Each model call is priced when it arrives, from the tokens the source reported and the price table row in effect that day: uncached input, cached read, cache write and output at their own prices, times any batch, priority or flex multiplier. A call with no price is counted and has no estimate.",
+        "reconciliation": "Provantix's tokens and cost for each provider, model and UTC day against the provider's own figures, for days that have settled, within the tolerances below."
+      },
+      "tolerance": {
+        "cost": 0.05,
+        "tokens": 0.02,
+        "min_tokens": 1000,
+        "window_days": 35,
+        "settle_hours": {
+          "kimi": 36,
+          "openai": 24,
+          "anthropic": 6,
+          "openrouter": 36
+        }
+      },
+      "price_table": [
+        {
+          "model": "claude-haiku-4",
+          "provider": "anthropic",
+          "input_per_1k": 0.8,
+          "output_per_1k": 4,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "claude-opus-4",
+          "provider": "anthropic",
+          "input_per_1k": 15,
+          "output_per_1k": 75,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "claude-sonnet-4",
+          "provider": "anthropic",
+          "input_per_1k": 3,
+          "output_per_1k": 15,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "gemini-2.5-flash",
+          "provider": "google",
+          "input_per_1k": 0.3,
+          "output_per_1k": 2.5,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "gemini-2.5-pro",
+          "provider": "google",
+          "input_per_1k": 1.25,
+          "output_per_1k": 10,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "gpt-4.1",
+          "provider": "openai",
+          "input_per_1k": 2,
+          "output_per_1k": 8,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "gpt-4.1-mini",
+          "provider": "openai",
+          "input_per_1k": 0.4,
+          "output_per_1k": 1.6,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "gpt-4o",
+          "provider": "openai",
+          "input_per_1k": 2.5,
+          "output_per_1k": 10,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "gpt-4o-mini",
+          "provider": "openai",
+          "input_per_1k": 0.15,
+          "output_per_1k": 0.6,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "o1",
+          "provider": "openai",
+          "input_per_1k": 15,
+          "output_per_1k": 60,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "o3-mini",
+          "provider": "openai",
+          "input_per_1k": 1.1,
+          "output_per_1k": 4.4,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "m1",
+          "provider": "p",
+          "input_per_1k": 1,
+          "output_per_1k": 2,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        },
+        {
+          "model": "m2",
+          "provider": "p",
+          "input_per_1k": 3,
+          "output_per_1k": 6,
+          "effective_from": "2026-01-01",
+          "batch_multiplier": null,
+          "cache_write_per_1k": null,
+          "cached_input_per_1k": null
+        }
+      ],
+      "currency_note": "Amounts stay in the provider's currency. A conversion uses a rate an organization admin entered, shown with its date.",
+      "currency_rates": []
+    },
+    "9": {
+      "items": [
+        "Anything outside AI and AI agents: this is not a statement of the organization's costs.",
+        "What the provider billed or what was paid. The provider's figures are what its own report said at the time they were fetched; an invoice is not read.",
+        "Spend by a provider Provantix is not connected to, or by a source that sent nothing, or calls that were never recorded: those are \"untracked\" or \"not connected\" and are named where known.",
+        "Whether any spend was necessary, correct or worth it, or that any call was authorised. Cost per outcome is a separate report and puts no value on an outcome.",
+        "A cause for any difference between Provantix's figures and a provider's.",
+        "That the figures are audited. It is cost evidence that supports an audit; it is not an audited financial statement."
+      ],
+      "title": "What this statement does not show"
+    }
+  },
+  "closed_at": "2026-11-05T12:00:00.000Z",
+  "closed_by": "vector generator",
+  "cells_hash": "f9f29b7fadcd6a9a1806a5739ead4dd8b1e9d5557728ef69c145f8649356f481",
+  "supersedes": null,
+  "adjustments": {
+    "note": "Late records, re-tags, price corrections and provider restatements that fell in a closed period. Each points at the statement and figure it corrects; none of them changes that statement.",
+    "rows": [],
+    "title": "Adjustments to earlier periods",
+    "total_delta_usd": 0
+  },
+  "statement_id": "cst_202610_v1_igmae",
+  "content_hash": "12648733625fc440985940208060e55d1f59db7f81730ca03ff1fba1141ccd57"
+}

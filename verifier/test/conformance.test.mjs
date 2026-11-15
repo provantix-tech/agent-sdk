@@ -26,6 +26,15 @@ for (const [name, exp] of Object.entries(expected)) {
     const r = verifyExport(dirOf(name, exp), { emitterKeys: keysOf(exp) });
     assert.equal(r.ok, exp.ok);
     assert.deepEqual(failingNames(r), [...exp.failing].sort());
+    if (exp.reconciliation) {
+      for (const [k, v] of Object.entries(exp.reconciliation)) assert.equal(r.reconciliation[k], v, `${name}: reconciliation ${k}`);
+    }
+    if (exp.decision_evidence) {
+      for (const [k, v] of Object.entries(exp.decision_evidence)) assert.equal(r.decision_evidence[k], v, `${name}: decision evidence ${k}`);
+    }
+    if (exp.control_evidence) {
+      for (const [k, v] of Object.entries(exp.control_evidence)) assert.equal(r.control_evidence[k], v, `${name}: control evidence ${k}`);
+    }
     if (exp.emitter_proof) {
       const got = proofOf(r.emitter_proof);
       for (const [k, v] of Object.entries(exp.emitter_proof)) {
@@ -78,6 +87,19 @@ test('python verifier agrees with the node verifier on every vector', (t) => {
     assert.deepEqual(proofOf(r.emitter_proof), proofOf(node.emitter_proof), `${name}: emitter proof counts`);
     assert.deepEqual(r.emitter_proof.lines, node.emitter_proof.lines, `${name}: emitter proof wording`);
     assert.deepEqual(r.emitter_proof.refused_at_ingest, node.emitter_proof.refused_at_ingest, `${name}: refused at ingest`);
+    // and the same reconciliation summary, down to the words
+    assert.deepEqual(r.reconciliation.lines, node.reconciliation.lines, `${name}: reconciliation wording`);
+    // and the same decision evidence, down to the words and the counts
+    assert.deepEqual(r.decision_evidence.lines, node.decision_evidence.lines, `${name}: decision evidence wording`);
+    for (const k of ['present', 'decisions', 'actions_citing', 'linked', 'mismatched', 'duplicates', 'not_in_scope', 'undelivered', 'malformed', 'erased_extensions']) {
+      assert.equal(r.decision_evidence[k], node.decision_evidence[k], `${name}: decision evidence ${k}`);
+    }
+    // and the same control evidence, down to the words and the counts
+    assert.deepEqual(r.control_evidence.lines, node.control_evidence.lines, `${name}: control evidence wording`);
+    for (const k of ['present', 'controls', 'actions_citing', 'linked', 'unbound', 'mismatched', 'duplicates', 'not_in_scope', 'malformed', 'denied_cited']) {
+      assert.equal(r.control_evidence[k], node.control_evidence[k], `${name}: control evidence ${k}`);
+    }
+    assert.deepEqual([r.reconciliation.results ?? null, r.reconciliation.checked ?? null, r.reconciliation.approvals ?? null, r.reconciliation.links ?? null], [node.reconciliation.results ?? null, node.reconciliation.checked ?? null, node.reconciliation.approvals ?? null, node.reconciliation.links ?? null], `${name}: reconciliation counts`);
   }
 });
 
