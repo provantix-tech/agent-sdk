@@ -45,3 +45,19 @@ test('spoolDir persists the handle key: restarted emitter produces identical han
   const handleOf = (batch) => JSON.stringify(batch.records[0].erasable.on_behalf_of.value);
   assert.equal(handleOf(batch1), handleOf(batch2), 'same human → same handle across restarts');
 });
+
+test('a first run with a spoolDir that does not exist yet works: the directory and the handle key are created, and a restart gets the same handles', () => {
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'emitter-spool-parent-'));
+  const spoolDir = path.join(parent, 'not', 'there', 'yet');
+  try {
+    assert.equal(fs.existsSync(spoolDir), false);
+    const keys = generateEmitterKeys();
+    const first = new AgentEmitter({ emitterId: 'emi_hk2', tenantId: 'tenant_a', privateKeyPem: keys.privateKeyPem, spoolDir });
+    const batch1 = emitOne(first);
+    assert.ok(fs.existsSync(path.join(spoolDir, 'handle-key.bin')), 'the key is kept in the new directory');
+    assert.equal(batch1.records.length, 1);
+    const second = new AgentEmitter({ emitterId: 'emi_hk2', tenantId: 'tenant_a', privateKeyPem: keys.privateKeyPem, spoolDir });
+    const handleOf = (batch) => JSON.stringify(batch.records[0].erasable.on_behalf_of.value);
+    assert.equal(handleOf(emitOne(second)), handleOf(batch1), 'the persisted key gives the same handle after a restart');
+  } finally { fs.rmSync(parent, { recursive: true, force: true }); }
+});

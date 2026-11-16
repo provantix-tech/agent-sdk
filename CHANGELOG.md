@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+- **A first run with a `spoolDir` that does not exist yet no longer fails.** In 0.4.0 (and earlier versions that persisted the handle key), `new AgentEmitter({ spoolDir })` failed with `ENOENT` on `handle-key.bin.tmp` when the directory had not been created: the key was written before the spool created the directory. The directory is now created first. Nothing else changes.
+
 ## 0.4.0
 
 Everything since 0.3.0. Nothing is removed or renamed, so an existing emitter keeps working as it is; upgrade with `npm install @provantix/agent-sdk@0.4.0`. Where a feature needs the platform to know it (decision and control evidence, exact-change approvals, cost tags, token kinds, configuration), the platform has accepted all of it already.

@@ -53,6 +53,8 @@ function resolveHandleKey({ spoolDir, handleKey }) {
       return fs.readFileSync(keyFile);
     } catch {
       const generated = newHandleKey();
+      // the spool directory may not exist yet on a first run (the spool creates it, but only after this key is resolved)
+      fs.mkdirSync(spoolDir, { recursive: true });
       const tmp = keyFile + '.tmp';
       fs.writeFileSync(tmp, generated, { mode: 0o600 });
       fs.renameSync(tmp, keyFile);
