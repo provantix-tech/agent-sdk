@@ -6,6 +6,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export class Spool {
+  // maxBytes is a safety default (2 GiB). Pass null for no limit: a customer-run deployment has no volume restrictions, so
+  // an emitter or collector there queues for as long as it must while ingest is unreachable (limited only by the disk).
   constructor(dir, { maxBytes = 2 * 1024 ** 3 } = {}) {
     this.dir = dir;
     this.maxBytes = maxBytes;
@@ -57,7 +59,7 @@ export class Spool {
   enqueue(batch) {
     const body = JSON.stringify(batch);
     const size = Buffer.byteLength(body);
-    if (this.bytes() + size > this.maxBytes) {
+    if (this.maxBytes != null && this.bytes() + size > this.maxBytes) {
       throw new Error('spool full: collector cannot accept more records until ingest is reachable');
     }
     const target = this.#file(batch.batch_seq);

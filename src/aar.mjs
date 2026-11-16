@@ -3,6 +3,8 @@
 // nothing here is platform-specific, so emitters written against this file work against any
 // conforming control plane.
 
+import { normaliseConfiguration } from './vendor/configuration.mjs';
+
 export const PROFILE_VERSION = '1.0';
 
 export const ACTION_TYPES = Object.freeze([
@@ -61,14 +63,20 @@ function warnOnRunIdTargetSystem(action) {
  * @param {'inside'|'boundary'|'destination'|'identity'} [a.vantage]
  * @param {object} a.agent             { vendor, vendorAgentId, version, principal, clientId, tokenActor, userAgent }
  * @param {object} a.action            { type, targetSystem, targetEntityType, targetEntityId, operation, toolName, fieldNames, dataClasses, externalRecipient }
- * @param {object} [a.correlation]     { traceId, spanId, parentSpanId, sessionId, conversationId }
+ * @param {object} [a.correlation]     { traceId, spanId, parentSpanId, sessionId, conversationId }. Give every step of one run the same traceId: expected steps and recovery checks group a run by it
+ * @param {object[]} [a.configuration] [{ flag, variant, provider? }]: the feature flags this step ran under and the variant each served (at most ten)
  * @param {object} [a.onBehalfOf]      [{ kind, id, idp }]  (human ids become handles at the boundary)
- * @param {object} [a.authorization]   { approvalId, approver, policyId, ticket, approvedAt } —
+ * @param {object} [a.authorization]   { approval_id, approver, policy_id, ticket, approved_at, binding } — binding (optional):
+ *                                      { target_system, target_entity_id, action_type, max_amount_minor, currency, expires_at, policy_version }
+ *                                      says what the approval covers —
  *                                      human approval for a sensitive action; approver becomes
  *                                      a handle at the boundary (Epic E)
- * @param {object} [a.model]           { provider, modelId, modelVersion, tokensIn, tokensOut, latencyMs }
+ * @param {object} [a.model]           { provider, modelId, modelVersion, tokensIn, tokensOut, latencyMs, tokensCacheRead, tokensCacheWrite, tokensReasoning, serviceTier, usageBasis }
+ *                                      tokensIn is ALL input tokens including the cached part; tokensOut is ALL output including reasoning. The last five are optional.
  * @param {object} [a.quality]         { outcome, errorClass, humanOverride }
  * @param {object} [a.content]         { inputText, outputText } — raw text; the boundary redacts it
+ * @param {Record<string, string>} [a.tags] cost tags, e.g. { department: 'sales', cost_center: 'CC-42', product: 'crm', project: 'apollo', environment: 'prod', region: 'emea' }.
+ *                                      Any name is a tag; a name never seen before becomes a dimension on the platform.
  * @param {string} [a.eventId]         source-unique id; default derived from emitter + counter + random
  */
 export function buildAAR(a) {
@@ -131,13 +139,37 @@ export function buildAAR(a) {
           tokens_in: a.model.tokensIn ?? null,
           tokens_out: a.model.tokensOut ?? null,
           latency_ms: a.model.latencyMs ?? null,
+          // Token kinds (all optional, kept only when given): tokensIn is ALL input including the cached part, tokensOut ALL output including reasoning.
+          ...(a.model.tokensCacheRead != null ? { tokens_cache_read: a.model.tokensCacheRead } : {}),
+          ...(a.model.tokensCacheWrite != null ? { tokens_cache_write: a.model.tokensCacheWrite } : {}),
+          ...(a.model.tokensReasoning != null ? { tokens_reasoning: a.model.tokensReasoning } : {}),
+          ...(a.model.serviceTier ? { service_tier: a.model.serviceTier } : {}),
+          ...(a.model.usageBasis ? { usage_basis: a.model.usageBasis } : {}),
+          // what the source says the call cost, in USD: kept as that source's figure beside the estimate, never in its place (PRO-66)
+          ...(Number.isFinite(Number(a.model.reportedCostUsd)) && a.model.reportedCostUsd !== null && Number(a.model.reportedCostUsd) >= 0 ? { reported_cost_usd: Number(a.model.reportedCostUsd), reported_cost_by: String(a.model.reportedCostBy ?? 'source').slice(0, 40) } : {}),
+          // a hash of the stable start of the prompt (or the system prompt), computed by the application: lets Provantix see calls that sent the same beginning without reading a cache (PRO-74). Never the prompt.
+          ...(typeof a.model.promptPrefixHash === 'string' && /^[0-9a-f]{16,128}$/i.test(a.model.promptPrefixHash) ? { prompt_prefix_hash: a.model.promptPrefixHash.toLowerCase() } : {}),
         }
       : null,
     quality: a.quality
       ? { outcome: a.quality.outcome ?? 'unknown', error_class: a.quality.errorClass ?? null, human_override: a.quality.humanOverride ?? null }
       : null,
-    ext: a.ext ?? null,
+    // Cost tags (PRO-63): what this source says about department, cost center, product, project, environment or anything else. Kept in the record as stated; the platform
+    // cleans the names and values and works out what it makes of them apart from the record.
+    ext: extOf(a),
   };
+}
+
+/**
+ * The record's `ext`: what the caller put there, with the cost tags and the configuration the step ran under added. The configuration is `[{ flag, variant, provider? }]`,
+ * the feature flag and the variant served (at most ten), kept as the source's statement: Provantix does not know whether the flag changed anything.
+ */
+function extOf(a) {
+  const ext = { ...(a.ext ?? {}) };
+  if (a.tags && typeof a.tags === 'object' && Object.keys(a.tags).length) ext.tags = { ...a.tags };
+  const configuration = normaliseConfiguration(a.configuration);
+  if (configuration.length) ext.configuration = configuration;
+  return Object.keys(ext).length ? ext : (a.ext ?? null);
 }
 
 /** Structural validation against the export profile. Throws with a readable message. */
@@ -164,6 +196,14 @@ export function validateAAR(aar) {
     else {
       if (!az.approval_id) problems.push('authorization.approval_id required');
       if (!az.approver) problems.push('authorization.approver required');
+      if (az.binding != null) {
+        const b = az.binding;
+        if (typeof b !== 'object' || Array.isArray(b)) problems.push('authorization.binding must be an object');
+        else {
+          if (b.max_amount_minor != null && b.max_amount_minor !== '' && !Number.isSafeInteger(Number(b.max_amount_minor))) problems.push('authorization.binding.max_amount_minor must be a whole number in minor units');
+          if (b.expires_at != null && Number.isNaN(Date.parse(b.expires_at))) problems.push('authorization.binding.expires_at must be a date and time');
+        }
+      }
     }
   }
   return problems;

@@ -5,3 +5,6 @@ export { AgentEmitter, aarToSourceEvent } from './emitter.mjs';
 export { generateEmitterKeys } from './keys.mjs';
 export { sanitizeLocation, locationFromEnv } from './location.mjs';
 
+export { buildDecisionAAR, decisionRef, DECISION_VERSION, DECISION_SOURCES, DECISION_LIMITS } from './decision.mjs';
+export { buildControlDecisionAAR, controlRef, CONTROL_VERSION, CONTROL_VERDICTS, CONTROL_LIMITS } from './control.mjs';
+export { buildMutation, changeDigest } from './mutation.mjs';

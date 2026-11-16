@@ -80,6 +80,9 @@ export class AgentEmitter {
    * @param {Buffer} [opts.handleKey]     HMAC key for human handles (default: persisted in
    *                                      spoolDir, else generated per process with a warning)
    * @param {number} [opts.maxBatchRecords]
+   * @param {number|null} [opts.spoolMaxBytes] the most the on-disk queue may hold while ingest is unreachable (default 2 GiB,
+   *                                    then enqueue throws 'spool full'). Pass null for no limit, for a customer-run deployment
+   *                                    with no volume restrictions; the disk is then the only limit.
    * @param {boolean} [opts.seal=true]  sign the hash of every record in each batch (the batch seal, SDK 0.2.0 and later).
    *                                    An auditor can then check, with your emitter's public key, that the emitter itself
    *                                    vouched for each record. Unsealed batches are accepted until the notice period set
@@ -89,7 +92,7 @@ export class AgentEmitter {
    *                                    the process runs in (AWS_REGION, GOOGLE_CLOUD_REGION, FLY_REGION, VERCEL_REGION),
    *                                    when one is set. Nothing finer than a country is kept. Stored as declared.
    */
-  constructor({ emitterId, tenantId, privateKeyPem, spoolDir = null, handleKey = null, maxBatchRecords = 200, seal = true, location = undefined }) {
+  constructor({ emitterId, tenantId, privateKeyPem, spoolDir = null, handleKey = null, maxBatchRecords = 200, spoolMaxBytes = undefined, seal = true, location = undefined }) {
     if (!emitterId || !tenantId || !privateKeyPem) throw new TypeError('emitterId, tenantId and privateKeyPem required');
     this.emitterId = emitterId;
     this.tenantId = tenantId;
@@ -106,7 +109,7 @@ export class AgentEmitter {
       collectorId: emitterId,
       privateKeyPem,
       handleKey: resolveHandleKey({ spoolDir, handleKey }),
-      spool: spoolDir ? new Spool(spoolDir) : new MemorySpool(),
+      spool: spoolDir ? new Spool(spoolDir, spoolMaxBytes === undefined ? {} : { maxBytes: spoolMaxBytes }) : new MemorySpool(),
       maxBatchRecords,
       seal,
     });

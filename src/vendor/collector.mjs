@@ -168,6 +168,7 @@ export class Collector {
             policy_id: ev.authorization.policy_id ?? null,
             ticket: ev.authorization.ticket ?? null,
             approved_at: ev.authorization.approved_at ?? null,
+            ...(bindingOf(ev.authorization.binding) ? { binding: bindingOf(ev.authorization.binding) } : {}),
           }
         : null,
     };
@@ -298,3 +299,24 @@ function mergeCounts(...maps) {
   }
   return out;
 }
+
+// PRO-5: what the approval was given for, so the engine can check it covers the action. Every field is optional; an approval
+// that carries none is "present, binding not recorded".
+export function bindingOf(b) {
+  if (!b || typeof b !== 'object' || Array.isArray(b)) return null;
+  const amount = b.max_amount_minor;
+  const out = {
+    target_system: b.target_system ?? null,
+    target_entity_id: b.target_entity_id ?? null,
+    action_type: b.action_type ?? null,
+    max_amount_minor: Number.isSafeInteger(Number(amount)) && amount !== null && amount !== '' ? Number(amount) : null,
+    currency: b.currency ? String(b.currency).toUpperCase() : null,
+    expires_at: b.expires_at ?? null,
+    policy_version: b.policy_version ?? null,
+  };
+  // PRO-37: an approval for an exact production change. All optional and left out when not stated, so older approvals are sealed exactly as before.
+  const extra = { environment: textOrNull(b.environment), resource: textOrNull(b.resource), operation: textOrNull(b.operation), change_digest: textOrNull(b.change_digest)?.toLowerCase() ?? null, risk_ref: textOrNull(b.risk_ref), break_glass: b.break_glass === true ? true : null };
+  for (const [k, v] of Object.entries(extra)) if (v !== null) out[k] = v;
+  return Object.values(out).some((v) => v !== null) ? out : null;
+}
+const textOrNull = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);

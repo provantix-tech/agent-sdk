@@ -11,8 +11,11 @@
 // }
 
 import { buildAAR } from './aar.mjs';
-import { computeDelegationChains, invokeAgentCallees, inheritedAgentBySpan } from '../../../ledger/packages/aar-schema/src/delegation.mjs';
-import { toolCallText, isSendAction, extractExternalRecipient } from '../../../ledger/packages/aar-schema/src/tool-payload.mjs';
+import { computeDelegationChains, invokeAgentCallees, inheritedAgentBySpan } from './vendor/delegation.mjs';
+import { toolCallText, isSendAction, extractExternalRecipient } from './vendor/tool-payload.mjs';
+import { normalizeUsage, normalizeTier, readBool, USAGE_ATTRIBUTES, USAGE_BASIS } from './vendor/usage.mjs';
+import { tagsFromAttributes, expandMetadata } from './vendor/tags.mjs';
+import { configurationOfOtelSpan } from './vendor/configuration.mjs';
 
 const OPERATION_TO_ACTION = {
   chat: 'call_model',
@@ -64,6 +67,16 @@ export function otelGenAiToAAR(span, opts = {}) {
         policy_id: AT(span, 'provantix.approval.policy'),
         ticket: AT(span, 'provantix.approval.ticket'),
         approved_at: AT(span, 'provantix.approval.approved_at'),
+        // PRO-5: what the approval was given for (all optional)
+        binding: {
+          target_system: AT(span, 'provantix.approval.target_system'),
+          target_entity_id: AT(span, 'provantix.approval.target_entity'),
+          action_type: AT(span, 'provantix.approval.action_type'),
+          max_amount_minor: AT(span, 'provantix.approval.max_amount_minor'),
+          currency: AT(span, 'provantix.approval.currency'),
+          expires_at: AT(span, 'provantix.approval.expires_at'),
+          policy_version: AT(span, 'provantix.approval.policy_version'),
+        },
       }
     : null;
 
@@ -74,6 +87,17 @@ export function otelGenAiToAAR(span, opts = {}) {
   const externalRecipient = isSendAction({ actionType, operation, toolName })
     ? extractExternalRecipient(span.attributes)
     : null;
+
+  // Token kinds, made the same for every provider (the same module the hosted intake uses). Only what the span reported is kept.
+  const firstAt = (names) => { for (const name of names) { const v = AT(span, name); if (v !== null && v !== undefined && v !== '') return v; } return null; };
+  const usage = normalizeUsage({
+    provider: AT(span, 'gen_ai.system'),
+    input: AT(span, 'gen_ai.usage.input_tokens'), output: AT(span, 'gen_ai.usage.output_tokens'),
+    cacheRead: firstAt(USAGE_ATTRIBUTES.cacheRead), cacheWrite: firstAt(USAGE_ATTRIBUTES.cacheWrite), reasoning: firstAt(USAGE_ATTRIBUTES.reasoning),
+    inputIncludesCache: readBool(firstAt(USAGE_ATTRIBUTES.inputIncludesCache)),
+  });
+
+  const stated = tagsFromAttributes(expandMetadata(span.attributes ?? {}));
 
   return buildAAR({
     tenantId: opts.tenantId,
@@ -114,9 +138,18 @@ export function otelGenAiToAAR(span, opts = {}) {
       provider: AT(span, 'gen_ai.system'),
       modelId: AT(span, 'gen_ai.request.model') ?? AT(span, 'gen_ai.response.model'),
       modelVersion: AT(span, 'gen_ai.response.model'),
-      tokensIn: NUM(AT(span, 'gen_ai.usage.input_tokens')),
-      tokensOut: NUM(AT(span, 'gen_ai.usage.output_tokens')),
+      tokensIn: usage.tokens_in,
+      tokensOut: usage.tokens_out,
       latencyMs: latencyMs(span),
+      tokensCacheRead: usage.tokens_cache_read,
+      tokensCacheWrite: usage.tokens_cache_write,
+      tokensReasoning: usage.tokens_reasoning,
+      serviceTier: normalizeTier(firstAt(USAGE_ATTRIBUTES.tier)),
+      usageBasis: usage.usage_basis !== USAGE_BASIS.NO_CACHE ? usage.usage_basis : null,
+      // the cost the span says the call had, in USD; kept as the source's figure beside the estimate. Other cost attributes do not state a unit and are not read.
+      reportedCostUsd: Number.isFinite(Number(AT(span, 'provantix.usage.cost_usd'))) && AT(span, 'provantix.usage.cost_usd') !== null && AT(span, 'provantix.usage.cost_usd') !== '' ? Number(AT(span, 'provantix.usage.cost_usd')) : null,
+      reportedCostBy: 'otel',
+      promptPrefixHash: AT(span, 'provantix.prompt.prefix_hash') ?? null,
     },
     quality: {
       outcome: error ? 'failure' : 'success',
@@ -124,12 +157,17 @@ export function otelGenAiToAAR(span, opts = {}) {
       humanOverride: null,
     },
     authorization,
+    // Cost tags the span states (PRO-63): the same attribute names the hosted intake reads.
+    tags: stated.tags,
+    // The feature flags the span (or its feature_flag.evaluation events) says it ran under, as the hosted intake reads them.
+    configuration: configurationOfOtelSpan(span),
     ext: {
       otel: {
         span_kind: kind,
         scope: AT(span, 'otel.scope.name'),
         operation_name: operation,
       },
+      ...(stated.over > 0 ? { tags_over_limit: stated.over } : {}),
     },
   });
 }

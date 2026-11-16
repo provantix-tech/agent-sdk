@@ -116,6 +116,24 @@ const emitter = new AgentEmitter({
 
 With no `location` the emitter reads the cloud region it runs in (`AWS_REGION`, `GOOGLE_CLOUD_REGION`, `FLY_REGION`, `VERCEL_REGION`) when one is set. `buildAAR({ location })` overrides it for one action. The location is inside the sealed record, so the seal covers it. Only a provider, region, zone and country are kept; a city or address is dropped before sealing.
 
+## Configuration: the feature flag variant a step ran under (0.4.0)
+
+Say which feature flags a step ran under and the variant each served, and Provantix shows them beside the step, keeps evaluation windows under different variants apart, and, after a rollback, checks that the same cohort is on the expected variant:
+
+```js
+emitter.emitAAR(buildAAR({
+  tenantId, emitterId, system: 'openai',
+  agent: { vendor: 'acme', vendorAgentId: 'support-bot' },
+  action: { type: 'call_model', targetSystem: 'llm' },
+  correlation: { traceId, spanId },                       // the same traceId on every step of one run
+  configuration: [{ flag: 'new-prompt', variant: 'v2', provider: 'launchdarkly' }],
+}));
+```
+
+At most ten flags per step. A variant is a string, a number or a boolean, kept as text; anything else is refused when you call `buildAAR`, because a flag value can be large or sensitive. The OpenTelemetry exporter reads the same thing from `feature_flag.key`, `feature_flag.result.variant` and `feature_flag.provider.name` on a span, or on its `feature_flag.evaluation` events, the way the hosted intake does. Provantix records what you say the step ran under. It does not know whether the flag changed anything.
+
+Give every step of one run the same `traceId`. Expected steps and recovery checks group a run by it.
+
 ## Sealed batches (0.2.0)
 
 From 0.2.0 the emitter signs a second, smaller statement with every batch: the hash of each record in it. This is the **batch seal**. It lets an auditor check, with your emitter's public key and without trusting Provantix, that the emitter itself vouched for exactly these records. It survives erasure, because a record hash never contained a value that is later erased.
@@ -149,7 +167,51 @@ node verifier/verify-export.mjs <export-folder> --keys provantix-export-keys.jso
 python3 verifier/python/verify_export.py <export-folder> --emitter-keys emitter-public.pem
 ```
 
-It checks integrity (hashes, chain links, daily roots), the Provantix export signature against the published keys, and each record's emitter seal. Where an export carries them, it also checks the evidence that sits on top of the records: a cost statement's figures are added up again from its cells (totals, each allocation and the chargeback files, so a figure changed after close fails even when the file hashes were rebuilt), and decisions, controls, exact-change approvals and reconciliations are checked against the records they cite. The Node verifier also checks the transparency log (`verify-log.mjs`). Exit code 0 means verified; 1 failed integrity; 2 bad usage; 3 consistent, but authenticity was not established (unsigned, no keys given, an unknown key). Integrity alone can be recomputed by whoever edits an export, so a result of 3 is not a pass. See `verifier/README.md` and `verifier/FORMAT.md`, and `verifier/vectors/` for known-good and known-bad exports.
+It checks integrity (hashes, chain links, daily roots), the Provantix export signature against the published keys, and each record's emitter seal. Exit code 0 means verified; 1 failed integrity; 2 bad usage; 3 consistent, but authenticity was not established (unsigned, no keys given, an unknown key). Integrity alone can be recomputed by whoever edits an export, so a result of 3 is not a pass. See `verifier/README.md` and `verifier/FORMAT.md`, and `verifier/vectors/` for known-good and known-bad exports.
+
+## Decision evidence: why the agent chose this
+
+When an agent decides something with consequences (restart a service, roll back a deploy, issue a refund), record why, before acting:
+
+```js
+import { buildDecisionAAR, decisionRef, buildAAR } from '@provantix/agent-sdk';
+
+const decision = buildDecisionAAR({
+  tenantId, emitterId, system: 'sre-runtime', agent: { vendor: 'acme', vendorAgentId: 'sre-agent' },
+  targetSystem: 'payments-prod', taskId: 'INC-4821', correlation: { traceId },
+  hypothesis: { summary: 'Latency began at the 14:02 deploy', evidence: [{ ref: 'metric://p99/payments', kind: 'metric' }] },
+  candidates: [{ id: 'c1', action: 'roll back deploy 41' }, { id: 'c2', action: 'scale out the pool' }],
+  selected: { candidateId: 'c1', actionId: 'act_7' },
+  rejected: [{ candidateId: 'c2', reason: 'would not remove the cause' }],
+});
+emitter.collector.ingest(aarToSourceEvent(decision.aar, emitter));
+
+// the action's own record points back at the decision
+const action = buildAAR({ /* ... */ ext: { decision_ref: decisionRef(decision.decision) } });
+```
+
+Give related decisions the same `taskId` (an incident or ticket id): the Incidents page groups on it. Pass `intentRef: { ref: 'ticket://INC-4821', kind: 'ticket' }` for the instruction the decision answers, and `modelRef: { modelId, provider, modelVersion, invocationRef }` for the model behind it. Both are references, never the instruction or the prompt. What is kept is short summaries and references (a metric id, a ticket, a hash), capped in length. What is refused: anything that looks like a credential, and any field the contract does not name, so a raw prompt or a reasoning trace cannot ride along by accident. Leave out what the agent did not say (`hypothesis`, `rejected`, a risk reference): it is then shown as not recorded, and nothing writes it for you. A decision is what the agent said it considered. It does not show the reasoning was sound, or that the action happened as chosen.
+
+## Control decision evidence: what an enforcement tool decided
+
+If you run the enforcement side (an agent gateway, a runtime security product, a policy engine, an approval step), record each verdict so Provantix can compare it with what happened:
+
+```js
+import { buildControlDecisionAAR, controlRef, buildAAR } from '@provantix/agent-sdk';
+
+const control = buildControlDecisionAAR({
+  tenantId, emitterId, system: 'agent-gateway', agent: { vendor: 'acme', vendorAgentId: 'sre-agent' },
+  enforcer: { name: 'agent-gateway', version: '2.1' }, verdict: 'deny', policy: { id: 'prod-changes', version: '7' },
+  reason: 'exposes a bucket to the internet', actionId: 'act_7',
+  proposed: { targetSystem: 'payments-prod', toolName: 'open_firewall' }, correlation: { traceId },
+});
+emitter.collector.ingest(aarToSourceEvent(control.aar, emitter));
+
+// where the agent's own record can carry it, a pointer makes the join exact
+const action = buildAAR({ /* ... */ ext: { control_ref: controlRef(control.control) } });
+```
+
+The verdict is one of `allow`, `ask`, `deny` or `steer` (map your tool's words onto these: block is deny, require approval is ask). The enforcer and the policy are required, because a verdict nobody can trace to a rule is not evidence. Anything that looks like a credential, and any field the contract does not name (a raw prompt, a tool's full arguments), is refused. A verdict is the enforcement tool's own statement: it is not proof the control worked, and a denied action with no record is "no record seen", not "it did not happen".
 
 ## Evidence is never rewritten
 
